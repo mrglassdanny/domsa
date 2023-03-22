@@ -1,0 +1,41 @@
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
+    id 'java'
+    id 'antlr'
+}
+
+repositories {
+    mavenCentral()
+}
+
+group 'com.github.mrglassdanny.domsa'
+version '0.0.1'
+
+ext.mainClass = 'com.github.mrglassdanny.domsa.Main'
+
+dependencies {
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.squareup.okhttp3:okhttp:3.4.2'
+    antlr 'org.antlr:antlr4:4.8'
+}
+
+
+generateGrammarSource {
+    outputDirectory = file('src/main/java/com/github/mrglassdanny/domsa/lang/antlr')
+    arguments += ["-listener"]
+}
+
+tasks.build.dependsOn tasks.shadowJar
+
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'com.github.mrglassdanny.domsa.Main'
+    }
+}
+
