@@ -4,98 +4,202 @@ grammar Domsa;
 package com.github.mrglassdanny.domsa.lang.antlr;
 }
 
-script: assignment* EOF;
+postfixExpr
+    :
+    Id
+    (LeftBracket expr RightBracket
+    | (Dot) Id
+    )*
+    ;
 
-assignment: WORD EQUAL expression end;
+mulExpr: (postfixExpr | Number) ((Star | Div | Mod) (postfixExpr | Number))*;
 
-expression: (WORD | number) (operator (expression))?;
+addExpr: mulExpr ((Plus | Minus) mulExpr)*;
 
-operator: (PLUS | MINUS | STAR | DIV | MOD);
+relExpr: addExpr ((Less | Greater | LessEqual | GreaterEqual) addExpr)*;
 
-number: MINUS? NUMERIC_LITERAL;
+eqExpr: relExpr ((Equal | NotEqual) relExpr)*;
 
-end: NEWLINE+;
+logAndExpr: eqExpr ((And) eqExpr)*;
 
-LEFT_PAREN: '(';
-RIGHT_PAREN: ')';
-LEFT_BRACE: '{';
-RIGHT_BRACE: '}';
-LEFT_BRACKET: '[';
-RIGHT_BRACKET: ']';
-LESS: '<';
-GREATER: '>';
-LESS_EQUAL: '<=';
-GREATER_EQUAL: '>=';
-DOUBLE_LESS: '<<';
-DOUBLE_GREATER: '>>';
-PLUS: '+';
-MINUS: '-';
-STAR: '*';
-DIV: '/';
-MOD: '%';
-BACKSLASH: '\\';
-AMPERSAND: '&';
-CARET: '^';
-BANG: '!';
-QUESTION: '?';
-COLON: ':';
-SEMI_COLON: ';';
-COMMA: ',';
-PIPE: '|';
-DOUBLE_PIPE: '||';
-POUND: '#';
-AT: '@';
-EQUAL: '=';
-NOT_EQUAL: '!=' | '<>';
-DOT: '.';
-DOLLAR_SIGN: '$';
+logOrExpr: logAndExpr ((Or) logOrExpr)*;
 
-NUMERIC_LITERAL:
-	DIGIT+ ('.' DIGIT*)? (E [-+]? DIGIT+)?
-	| '.' DIGIT+ ( E [-+]? DIGIT+)?;
+condExpr: logOrExpr (Question expr Colon condExpr);
 
-STRING_LITERAL: (
-		'\'' ( ~'\'' | '\'\'')* '\''
-		| '"' ( ~'"' | '""')* '"'
-	);
+assignExpr: condExpr | ( assignOper assignExpr) | Number | StringLiteral;
 
-FMT_STRING_LITERAL: (
-		'`' .*? '`'
-	);
+assignOper: Assign;
 
-WORD: [a-zA-Z_0-9.]+;
+expr: assignExpr (Comma assignExpr)*;
 
-BLOCK_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
+constExpr
+    :   condExpr
+    ;
 
-WHITESPACE: [ \t]+ -> channel(HIDDEN);
+jsonAsgExpr: Id Colon expr;
 
-NEWLINE: ( '\r' '\n'? | '\n');
+jsonExpr: LeftBrace (jsonAsgExpr (Comma jsonAsgExpr)*)? RightBrace;
 
-fragment DIGIT: [0-9];
+jsonInitExpr: Id Assign jsonExpr;
 
-fragment A: [aA];
-fragment B: [bB];
-fragment C: [cC];
-fragment D: [dD];
-fragment E: [eE];
-fragment F: [fF];
-fragment G: [gG];
-fragment H: [hH];
-fragment I: [iI];
-fragment J: [jJ];
-fragment K: [kK];
-fragment L: [lL];
-fragment M: [mM];
-fragment N: [nN];
-fragment O: [oO];
-fragment P: [pP];
-fragment Q: [qQ];
-fragment R: [rR];
-fragment S: [sS];
-fragment T: [tT];
-fragment U: [uU];
-fragment V: [vV];
-fragment W: [wW];
-fragment X: [xX];
-fragment Y: [yY];
-fragment Z: [zZ];
+fnExpr: Id LeftParen (expr | jsonExpr)? RightParen;
+
+
+eos: NewLine+ | EOF;
+
+stmt
+    :   lblStmt
+    |   compStmt
+    |   exprStmt
+    |   selStmt
+    |   iterStmt
+    ;
+
+lblStmt
+    :   Id Colon stmt
+    |   Case constExpr Colon stmt
+    |   Default Colon stmt
+    ;
+
+compStmt
+    :   LeftBrace stmt? RightBrace
+    ;
+
+exprStmt
+    :   expr? eos
+    ;
+
+selStmt
+    :   If expr stmt (Else stmt)?
+    |   Switch expr stmt
+    ;
+
+iterStmt
+    :   Loop stmt
+    |   While expr stmt
+    |   For Id In postfixExpr stmt
+    ;
+
+script
+    :   stmt? EOF
+    ;
+
+
+
+// ================================================================================
+
+Break : 'break';
+Case : 'case';
+Else : 'else';
+For : 'for';
+If : 'if';
+In : 'in';
+Loop: 'loop';
+Return : 'return';
+Switch : 'switch';
+
+LeftParen : '(';
+RightParen : ')';
+LeftBracket : '[';
+RightBracket : ']';
+LeftBrace : '{';
+RightBrace : '}';
+
+Less : '<';
+LessEqual : '<=';
+Greater : '>';
+GreaterEqual : '>=';
+
+Plus : '+';
+PlusPlus : '++';
+Minus : '-';
+MinusMinus : '--';
+Star : '*';
+Div : '/';
+Mod : '%';
+
+And : 'and';
+Or : 'or';
+Not : '!';
+
+Question : '?';
+Colon : ':';
+Comma : ',';
+
+Assign : '=';
+
+Equal : '==';
+NotEqual : '!=';
+
+Dot : '.';
+
+Id
+    :   IdNondigit
+        (   IdNondigit
+        |   Digit
+        )*
+    ;
+
+fragment
+IdNondigit
+    :   Nondigit
+    ;
+
+fragment
+Nondigit
+    :   [a-zA-Z_]
+    ;
+
+Number: Sign? DigitSequence+ (Dot DigitSequence*)?;
+
+fragment
+Sign
+    :   [+-]
+    ;
+
+DigitSequence
+    :   Digit+
+    ;
+
+fragment
+Digit
+    :   [0-9]
+    ;
+
+StringLiteral
+    :   ('"' SCharSequence? '"')
+    |   ('`' SCharSequence? '`')
+    ;
+
+fragment
+SCharSequence
+    :   SChar+
+    ;
+
+fragment
+SChar
+    :   ~["\\\r\n]
+    |   '\\\n'   // Added line
+    |   '\\\r\n' // Added line
+    ;
+
+Whitespace
+    :   [ \t]+
+        -> skip
+    ;
+
+Newline
+    :   (   '\r' '\n'?
+        |   '\n'
+        ) -> skip
+    ;
+
+BlockComment
+    :   '/*' .*? '*/'
+        -> skip
+    ;
+
+LineComment
+    :   '//' ~[\r\n]*
+        -> skip
+    ;
