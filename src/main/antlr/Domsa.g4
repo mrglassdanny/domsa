@@ -4,51 +4,42 @@ grammar Domsa;
 package com.github.mrglassdanny.domsa.lang.antlr;
 }
 
-primExpr
-    : Id
-    | Number
-    | String
-    | FormatString
-    | LeftParen expr RightParen
-    ;
+// EXPRESSION ------------------------------------------------------------------------------------
 
-idAssignExpr
+idExpr
     :
-    Id
-    (LeftBracket expr RightBracket
-    | Dot Id
-    )*
+    Id (Dot Id)*
     ;
 
-fnExpr: Id LeftParen expr RightParen;
+fnExpr: Id LeftParen expr? RightParen;
 
-idExpr: primExpr | idAssignExpr | fnExpr;
-
-
-mulExpr: (idExpr | Number) ((Star | Div | Mod) (idExpr | Number))*;
+arithExpr: Number | fnExpr | idExpr | LeftParen addExpr RightParen;
+mulExpr: arithExpr ((Star | Div | Mod) arithExpr)*;
 addExpr: mulExpr ((Plus | Minus) mulExpr)*;
 
 relExpr: addExpr ((Less | Greater | LessEqual | GreaterEqual) addExpr)*;
-
 eqValue: (relExpr | String | FormatString | True | False | Null);
 eqExpr: eqValue ((Equal | NotEqual) eqValue)*;
 
-logAndExpr: eqExpr ((And) eqExpr)*;
-logOrExpr: logAndExpr ((Or) logOrExpr)*;
+logAndExpr: eqExpr (And eqExpr)*;
+logOrExpr: logAndExpr (Or logAndExpr)*;
 
-constExpr
-    :   logOrExpr
-    ;
+expr
+    : logOrExpr
+    | LeftParen expr RightParen;
 
-expr: constExpr;
+// ASSIGNMENT ------------------------------------------------------------------------------------
 
-assign: (idAssignExpr assignOper assignValue) | jsonAssign;
+assign: idExpr assignOper assignValue;
 
 assignOper: Assign;
 
-assignValue: idExpr | Number | String | FormatString | True | False | Null | expr;
+assignValue
+    : expr
+    | (jsonObj | jsonArr)
+    ;
 
-jsonAssign: idAssignExpr assignOper jsonValue;
+// JSON ------------------------------------------------------------------------------------
 
 jsonObj
    : LeftBrace jsonPair (Comma jsonPair)* RightBrace
@@ -65,19 +56,14 @@ jsonArr
    ;
 
 jsonValue
-   : String
-   | FormatString
-   | Number
-   | Id
-   | expr
+   : expr
    | jsonObj
    | jsonArr
-   | True
-   | False
-   | Null
    ;
 
-eos: '\n'+ | EOF;
+// FLOW ------------------------------------------------------------------------------------
+
+eos: NewLine+ | EOF;
 
 stmt
     :   lblStmt
@@ -92,7 +78,7 @@ assignStmt
 
 lblStmt
     :   Id Colon stmt
-    |   Case constExpr Colon stmt
+    |   Case expr Colon stmt
     |   Default Colon stmt
     ;
 
