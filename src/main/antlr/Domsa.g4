@@ -42,8 +42,8 @@ assignValue
 // JSON ------------------------------------------------------------------------------------
 
 jsonObj
-   : LeftBrace jsonPair (Comma jsonPair)* RightBrace
-   | LeftBrace RightBrace
+   : LeftBrace eos? jsonPair (Comma eos? jsonPair)* eos? RightBrace
+   | LeftBrace eos? RightBrace
    ;
 
 jsonPair
@@ -51,7 +51,7 @@ jsonPair
    ;
 
 jsonArr
-   : LeftBracket jsonValue (Comma jsonValue)* RightBracket
+   : LeftBracket eos? jsonValue (Comma eos? jsonValue)* eos? RightBracket
    | LeftBracket RightBracket
    ;
 
@@ -63,7 +63,7 @@ jsonValue
 
 // FLOW ------------------------------------------------------------------------------------
 
-eos: NewLine+ | EOF;
+eos: Newline+ | EOF;
 
 stmt
     :   lblStmt
@@ -98,12 +98,12 @@ iterStmt
     ;
 
 script
-    :   stmt? EOF
+    :   stmt? eos
     ;
 
 
 
-// ================================================================================
+// TOKENS ------------------------------------------------------------------------------------
 
 Break : 'break';
 Case : 'case';
@@ -212,7 +212,7 @@ Whitespace
 Newline
     :   (   '\r' '\n'?
         |   '\n'
-        ) -> skip
+        )
     ;
 
 BlockComment
