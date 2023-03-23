@@ -4,56 +4,91 @@ grammar Domsa;
 package com.github.mrglassdanny.domsa.lang.antlr;
 }
 
-postfixExpr
+primExpr
+    : Id
+    | Number
+    | String
+    | FormatString
+    | LeftParen expr RightParen
+    ;
+
+idAssignExpr
     :
     Id
     (LeftBracket expr RightBracket
-    | (Dot) Id
+    | Dot Id
     )*
     ;
 
-mulExpr: (postfixExpr | Number) ((Star | Div | Mod) (postfixExpr | Number))*;
+fnExpr: Id LeftParen expr RightParen;
 
+idExpr: primExpr | idAssignExpr | fnExpr;
+
+
+mulExpr: (idExpr | Number) ((Star | Div | Mod) (idExpr | Number))*;
 addExpr: mulExpr ((Plus | Minus) mulExpr)*;
 
 relExpr: addExpr ((Less | Greater | LessEqual | GreaterEqual) addExpr)*;
 
-eqExpr: relExpr ((Equal | NotEqual) relExpr)*;
+eqValue: (relExpr | String | FormatString | True | False | Null);
+eqExpr: eqValue ((Equal | NotEqual) eqValue)*;
 
 logAndExpr: eqExpr ((And) eqExpr)*;
-
 logOrExpr: logAndExpr ((Or) logOrExpr)*;
 
-condExpr: logOrExpr (Question expr Colon condExpr);
+constExpr
+    :   logOrExpr
+    ;
 
-assignExpr: condExpr | ( assignOper assignExpr) | Number | StringLiteral;
+expr: constExpr;
+
+assign: (idAssignExpr assignOper assignValue) | jsonAssign;
 
 assignOper: Assign;
 
-expr: assignExpr (Comma assignExpr)*;
+assignValue: idExpr | Number | String | FormatString | True | False | Null | expr;
 
-constExpr
-    :   condExpr
-    ;
+jsonAssign: idAssignExpr assignOper jsonValue;
 
-jsonAsgExpr: Id Colon expr;
+jsonObj
+   : LeftBrace jsonPair (Comma jsonPair)* RightBrace
+   | LeftBrace RightBrace
+   ;
 
-jsonExpr: LeftBrace (jsonAsgExpr (Comma jsonAsgExpr)*)? RightBrace;
+jsonPair
+   : Id Colon jsonValue
+   ;
 
-jsonInitExpr: Id Assign jsonExpr;
+jsonArr
+   : LeftBracket jsonValue (Comma jsonValue)* RightBracket
+   | LeftBracket RightBracket
+   ;
 
-fnExpr: Id LeftParen (expr | jsonExpr)? RightParen;
+jsonValue
+   : String
+   | FormatString
+   | Number
+   | Id
+   | expr
+   | jsonObj
+   | jsonArr
+   | True
+   | False
+   | Null
+   ;
 
-
-eos: NewLine+ | EOF;
+eos: '\n'+ | EOF;
 
 stmt
     :   lblStmt
     |   compStmt
-    |   exprStmt
+    |   assignStmt
     |   selStmt
     |   iterStmt
     ;
+
+assignStmt
+    :   assign? eos;
 
 lblStmt
     :   Id Colon stmt
@@ -65,10 +100,6 @@ compStmt
     :   LeftBrace stmt? RightBrace
     ;
 
-exprStmt
-    :   expr? eos
-    ;
-
 selStmt
     :   If expr stmt (Else stmt)?
     |   Switch expr stmt
@@ -77,7 +108,7 @@ selStmt
 iterStmt
     :   Loop stmt
     |   While expr stmt
-    |   For Id In postfixExpr stmt
+    |   For Id In Id stmt
     ;
 
 script
@@ -90,13 +121,18 @@ script
 
 Break : 'break';
 Case : 'case';
+Default: 'default';
 Else : 'else';
+False: 'false';
 For : 'for';
 If : 'if';
 In : 'in';
 Loop: 'loop';
+Null: 'null';
 Return : 'return';
 Switch : 'switch';
+True: 'true';
+While: 'while';
 
 LeftParen : '(';
 RightParen : ')';
@@ -150,12 +186,7 @@ Nondigit
     :   [a-zA-Z_]
     ;
 
-Number: Sign? DigitSequence+ (Dot DigitSequence*)?;
-
-fragment
-Sign
-    :   [+-]
-    ;
+Number: Minus? DigitSequence+ (Dot DigitSequence*)?;
 
 DigitSequence
     :   Digit+
@@ -166,22 +197,26 @@ Digit
     :   [0-9]
     ;
 
-StringLiteral
-    :   ('"' SCharSequence? '"')
-    |   ('`' SCharSequence? '`')
-    ;
+FormatString
+   : '`' (SafeCodePoint)* '`'
+   ;
 
-fragment
-SCharSequence
-    :   SChar+
-    ;
+String
+   : '"' (StringEsc | SafeCodePoint)* '"'
+   ;
 
-fragment
-SChar
-    :   ~["\\\r\n]
-    |   '\\\n'   // Added line
-    |   '\\\r\n' // Added line
-    ;
+fragment StringEsc
+   : '\\' (["\\/bfnrt] | Unicode)
+   ;
+fragment Unicode
+   : 'u' Hex Hex Hex Hex
+   ;
+fragment Hex
+   : [0-9a-fA-F]
+   ;
+fragment SafeCodePoint
+   : ~ ["\\\u0000-\u001F]
+   ;
 
 Whitespace
     :   [ \t]+
