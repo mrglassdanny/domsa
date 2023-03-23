@@ -1,4 +1,4 @@
-grammar Domsa;
+grammar DomsaScript;
 
 @header {
 package com.github.mrglassdanny.domsa.lang.antlr;
@@ -66,36 +66,33 @@ jsonValue
 eos: Newline+ | EOF;
 
 stmt
-    :   lblStmt
-    |   compStmt
+    :   eos?
+    (   nestStmt
     |   assignStmt
-    |   selStmt
+    |   condStmt
     |   iterStmt
+    |   retStmt)
     ;
 
 assignStmt
     :   assign? eos;
 
-lblStmt
-    :   Id Colon stmt
-    |   Case expr Colon stmt
-    |   Default Colon stmt
+nestStmt
+    :   LeftBrace eos? stmt? eos? RightBrace
     ;
 
-compStmt
-    :   LeftBrace stmt? RightBrace
-    ;
-
-selStmt
-    :   If expr stmt (Else stmt)?
-    |   Switch expr stmt
+condStmt
+    :   If expr nestStmt (Else If expr nestStmt)? (Else nestStmt)?
     ;
 
 iterStmt
-    :   Loop stmt
-    |   While expr stmt
-    |   For Id In Id stmt
+    :   Loop nestStmt
+    |   While expr nestStmt
+    |   For Id In Id nestStmt
     ;
+
+retStmt
+    : Return expr;
 
 script
     :   stmt? eos
