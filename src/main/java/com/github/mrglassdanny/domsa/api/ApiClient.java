@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -11,9 +13,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
-public class RestClient {
+public class ApiClient {
 
-    public static String get(String urlStr) throws IOException, Exception {
+    public static JsonElement get(String urlStr) throws IOException, Exception {
 
         URL url = new URL(urlStr);
 
@@ -24,11 +26,11 @@ public class RestClient {
                 .addHeader("Accept", "application/json").build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            return new JsonParser().parse(response.body().string());
         }
     }
 
-    public static String post(String urlStr, String reqStr) throws IOException, Exception {
+    public static JsonElement post(String urlStr, String reqStr) throws IOException, Exception {
 
         URL url = new URL(urlStr);
 
@@ -42,7 +44,7 @@ public class RestClient {
                 .addHeader("Accept", "application/json").build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            return new JsonParser().parse(response.body().string());
         }
     }
 }
