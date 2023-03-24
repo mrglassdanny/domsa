@@ -24,7 +24,7 @@ dependencies {
 
 
 generateGrammarSource {
-    outputDirectory = file('src/main/java/com/github/mrglassdanny/domsa/lang/antlr')
+    outputDirectory = file('src/main/java/com/github/mrglassdanny/domsa/lang/antlrgen')
     arguments += ["-listener"]
 }
 

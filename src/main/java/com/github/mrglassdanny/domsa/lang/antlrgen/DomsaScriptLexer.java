@@ -1,6 +1,6 @@
 // Generated from DomsaScript.g4 by ANTLR 4.8
 
-package com.github.mrglassdanny.domsa.lang.antlr;
+package com.github.mrglassdanny.domsa.lang.antlrgen;
 
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

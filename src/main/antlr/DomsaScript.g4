@@ -1,7 +1,7 @@
 grammar DomsaScript;
 
 @header {
-package com.github.mrglassdanny.domsa.lang.antlr;
+package com.github.mrglassdanny.domsa.lang.antlrgen;
 }
 
 // EXPRESSION ------------------------------------------------------------------------------------
