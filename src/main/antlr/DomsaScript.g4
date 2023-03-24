@@ -28,22 +28,12 @@ expr
     : logOrExpr
     | LeftParen expr RightParen;
 
-// ASSIGNMENT ------------------------------------------------------------------------------------
-
-assign: idExpr assignOper assignValue;
-
-assignOper: Assign;
-
-assignValue
-    : expr
-    | (jsonObj | jsonArr)
-    ;
-
 // JSON ------------------------------------------------------------------------------------
 
-jsonObj
-   : LeftBrace eos? jsonPair (Comma eos? jsonPair)* eos? RightBrace
-   | LeftBrace eos? RightBrace
+jsonValue
+   : expr
+   | jsonObj
+   | jsonArr
    ;
 
 jsonPair
@@ -55,11 +45,21 @@ jsonArr
    | LeftBracket RightBracket
    ;
 
-jsonValue
-   : expr
-   | jsonObj
-   | jsonArr
+jsonObj
+   : LeftBrace eos? jsonPair (Comma eos? jsonPair)* eos? RightBrace
+   | LeftBrace eos? RightBrace
    ;
+
+// ASSIGNMENT ------------------------------------------------------------------------------------
+
+assignOper: Assign;
+
+assignValue
+    : expr
+    | (jsonObj | jsonArr)
+    ;
+
+assign: idExpr assignOper assignValue;
 
 // FLOW ------------------------------------------------------------------------------------
 

@@ -150,49 +150,13 @@ public class DomsaScriptBaseListener implements DomsaScriptListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAssign(DomsaScriptParser.AssignContext ctx) { }
+	@Override public void enterJsonValue(DomsaScriptParser.JsonValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAssign(DomsaScriptParser.AssignContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAssignOper(DomsaScriptParser.AssignOperContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAssignOper(DomsaScriptParser.AssignOperContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAssignValue(DomsaScriptParser.AssignValueContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAssignValue(DomsaScriptParser.AssignValueContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterJsonObj(DomsaScriptParser.JsonObjContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitJsonObj(DomsaScriptParser.JsonObjContext ctx) { }
+	@Override public void exitJsonValue(DomsaScriptParser.JsonValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -222,13 +186,49 @@ public class DomsaScriptBaseListener implements DomsaScriptListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterJsonValue(DomsaScriptParser.JsonValueContext ctx) { }
+	@Override public void enterJsonObj(DomsaScriptParser.JsonObjContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitJsonValue(DomsaScriptParser.JsonValueContext ctx) { }
+	@Override public void exitJsonObj(DomsaScriptParser.JsonObjContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignOper(DomsaScriptParser.AssignOperContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignOper(DomsaScriptParser.AssignOperContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignValue(DomsaScriptParser.AssignValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignValue(DomsaScriptParser.AssignValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssign(DomsaScriptParser.AssignContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssign(DomsaScriptParser.AssignContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

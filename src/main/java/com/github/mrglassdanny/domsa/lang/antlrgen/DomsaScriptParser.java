@@ -30,18 +30,17 @@ public class DomsaScriptParser extends Parser {
 	public static final int
 		RULE_idExpr = 0, RULE_fnExpr = 1, RULE_arithExpr = 2, RULE_mulExpr = 3, 
 		RULE_addExpr = 4, RULE_relExpr = 5, RULE_eqValue = 6, RULE_eqExpr = 7, 
-		RULE_logAndExpr = 8, RULE_logOrExpr = 9, RULE_expr = 10, RULE_assign = 11, 
-		RULE_assignOper = 12, RULE_assignValue = 13, RULE_jsonObj = 14, RULE_jsonPair = 15, 
-		RULE_jsonArr = 16, RULE_jsonValue = 17, RULE_eos = 18, RULE_stmt = 19, 
+		RULE_logAndExpr = 8, RULE_logOrExpr = 9, RULE_expr = 10, RULE_jsonValue = 11, 
+		RULE_jsonPair = 12, RULE_jsonArr = 13, RULE_jsonObj = 14, RULE_assignOper = 15, 
+		RULE_assignValue = 16, RULE_assign = 17, RULE_eos = 18, RULE_stmt = 19, 
 		RULE_assignStmt = 20, RULE_nestStmt = 21, RULE_condStmt = 22, RULE_iterStmt = 23, 
 		RULE_retStmt = 24, RULE_script = 25;
 	private static String[] makeRuleNames() {
 		return new String[] {
 			"idExpr", "fnExpr", "arithExpr", "mulExpr", "addExpr", "relExpr", "eqValue", 
-			"eqExpr", "logAndExpr", "logOrExpr", "expr", "assign", "assignOper", 
-			"assignValue", "jsonObj", "jsonPair", "jsonArr", "jsonValue", "eos", 
-			"stmt", "assignStmt", "nestStmt", "condStmt", "iterStmt", "retStmt", 
-			"script"
+			"eqExpr", "logAndExpr", "logOrExpr", "expr", "jsonValue", "jsonPair", 
+			"jsonArr", "jsonObj", "assignOper", "assignValue", "assign", "eos", "stmt", 
+			"assignStmt", "nestStmt", "condStmt", "iterStmt", "retStmt", "script"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -900,93 +899,7 @@ public class DomsaScriptParser extends Parser {
 		return _localctx;
 	}
 
-	public static class AssignContext extends ParserRuleContext {
-		public IdExprContext idExpr() {
-			return getRuleContext(IdExprContext.class,0);
-		}
-		public AssignOperContext assignOper() {
-			return getRuleContext(AssignOperContext.class,0);
-		}
-		public AssignValueContext assignValue() {
-			return getRuleContext(AssignValueContext.class,0);
-		}
-		public AssignContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
-		}
-		@Override public int getRuleIndex() { return RULE_assign; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssign(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssign(this);
-		}
-	}
-
-	public final AssignContext assign() throws RecognitionException {
-		AssignContext _localctx = new AssignContext(_ctx, getState());
-		enterRule(_localctx, 22, RULE_assign);
-		try {
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(139);
-			idExpr();
-			setState(140);
-			assignOper();
-			setState(141);
-			assignValue();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
-		finally {
-			exitRule();
-		}
-		return _localctx;
-	}
-
-	public static class AssignOperContext extends ParserRuleContext {
-		public TerminalNode Assign() { return getToken(DomsaScriptParser.Assign, 0); }
-		public AssignOperContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
-		}
-		@Override public int getRuleIndex() { return RULE_assignOper; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssignOper(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssignOper(this);
-		}
-	}
-
-	public final AssignOperContext assignOper() throws RecognitionException {
-		AssignOperContext _localctx = new AssignOperContext(_ctx, getState());
-		enterRule(_localctx, 24, RULE_assignOper);
-		try {
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(143);
-			match(Assign);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
-		finally {
-			exitRule();
-		}
-		return _localctx;
-	}
-
-	public static class AssignValueContext extends ParserRuleContext {
+	public static class JsonValueContext extends ParserRuleContext {
 		public ExprContext expr() {
 			return getRuleContext(ExprContext.class,0);
 		}
@@ -996,25 +909,25 @@ public class DomsaScriptParser extends Parser {
 		public JsonArrContext jsonArr() {
 			return getRuleContext(JsonArrContext.class,0);
 		}
-		public AssignValueContext(ParserRuleContext parent, int invokingState) {
+		public JsonValueContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_assignValue; }
+		@Override public int getRuleIndex() { return RULE_jsonValue; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssignValue(this);
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonValue(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssignValue(this);
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonValue(this);
 		}
 	}
 
-	public final AssignValueContext assignValue() throws RecognitionException {
-		AssignValueContext _localctx = new AssignValueContext(_ctx, getState());
-		enterRule(_localctx, 26, RULE_assignValue);
+	public final JsonValueContext jsonValue() throws RecognitionException {
+		JsonValueContext _localctx = new JsonValueContext(_ctx, getState());
+		enterRule(_localctx, 22, RULE_jsonValue);
 		try {
-			setState(150);
+			setState(142);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case False:
@@ -1027,36 +940,191 @@ public class DomsaScriptParser extends Parser {
 			case String:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(145);
+				setState(139);
 				expr();
 				}
 				break;
-			case LeftBracket:
 			case LeftBrace:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(148);
-				_errHandler.sync(this);
-				switch (_input.LA(1)) {
-				case LeftBrace:
-					{
-					setState(146);
-					jsonObj();
-					}
-					break;
-				case LeftBracket:
-					{
-					setState(147);
-					jsonArr();
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
+				setState(140);
+				jsonObj();
 				}
+				break;
+			case LeftBracket:
+				enterOuterAlt(_localctx, 3);
+				{
+				setState(141);
+				jsonArr();
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class JsonPairContext extends ParserRuleContext {
+		public TerminalNode Id() { return getToken(DomsaScriptParser.Id, 0); }
+		public TerminalNode Colon() { return getToken(DomsaScriptParser.Colon, 0); }
+		public JsonValueContext jsonValue() {
+			return getRuleContext(JsonValueContext.class,0);
+		}
+		public JsonPairContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_jsonPair; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonPair(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonPair(this);
+		}
+	}
+
+	public final JsonPairContext jsonPair() throws RecognitionException {
+		JsonPairContext _localctx = new JsonPairContext(_ctx, getState());
+		enterRule(_localctx, 24, RULE_jsonPair);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(144);
+			match(Id);
+			setState(145);
+			match(Colon);
+			setState(146);
+			jsonValue();
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class JsonArrContext extends ParserRuleContext {
+		public TerminalNode LeftBracket() { return getToken(DomsaScriptParser.LeftBracket, 0); }
+		public List<JsonValueContext> jsonValue() {
+			return getRuleContexts(JsonValueContext.class);
+		}
+		public JsonValueContext jsonValue(int i) {
+			return getRuleContext(JsonValueContext.class,i);
+		}
+		public TerminalNode RightBracket() { return getToken(DomsaScriptParser.RightBracket, 0); }
+		public List<EosContext> eos() {
+			return getRuleContexts(EosContext.class);
+		}
+		public EosContext eos(int i) {
+			return getRuleContext(EosContext.class,i);
+		}
+		public List<TerminalNode> Comma() { return getTokens(DomsaScriptParser.Comma); }
+		public TerminalNode Comma(int i) {
+			return getToken(DomsaScriptParser.Comma, i);
+		}
+		public JsonArrContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_jsonArr; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonArr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonArr(this);
+		}
+	}
+
+	public final JsonArrContext jsonArr() throws RecognitionException {
+		JsonArrContext _localctx = new JsonArrContext(_ctx, getState());
+		enterRule(_localctx, 26, RULE_jsonArr);
+		int _la;
+		try {
+			setState(170);
+			_errHandler.sync(this);
+			switch ( getInterpreter().adaptivePredict(_input,16,_ctx) ) {
+			case 1:
+				enterOuterAlt(_localctx, 1);
+				{
+				setState(148);
+				match(LeftBracket);
+				setState(150);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				if (_la==Newline) {
+					{
+					setState(149);
+					eos();
+					}
+				}
+
+				setState(152);
+				jsonValue();
+				setState(160);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				while (_la==Comma) {
+					{
+					{
+					setState(153);
+					match(Comma);
+					setState(155);
+					_errHandler.sync(this);
+					_la = _input.LA(1);
+					if (_la==Newline) {
+						{
+						setState(154);
+						eos();
+						}
+					}
+
+					setState(157);
+					jsonValue();
+					}
+					}
+					setState(162);
+					_errHandler.sync(this);
+					_la = _input.LA(1);
+				}
+				setState(164);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				if (_la==Newline) {
+					{
+					setState(163);
+					eos();
+					}
+				}
+
+				setState(166);
+				match(RightBracket);
+				}
+				break;
+			case 2:
+				enterOuterAlt(_localctx, 2);
+				{
+				setState(168);
+				match(LeftBracket);
+				setState(169);
+				match(RightBracket);
+				}
+				break;
 			}
 		}
 		catch (RecognitionException re) {
@@ -1108,68 +1176,11 @@ public class DomsaScriptParser extends Parser {
 		enterRule(_localctx, 28, RULE_jsonObj);
 		int _la;
 		try {
-			setState(177);
+			setState(197);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,18,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,22,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
-				{
-				setState(152);
-				match(LeftBrace);
-				setState(154);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				if (_la==Newline) {
-					{
-					setState(153);
-					eos();
-					}
-				}
-
-				setState(156);
-				jsonPair();
-				setState(164);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				while (_la==Comma) {
-					{
-					{
-					setState(157);
-					match(Comma);
-					setState(159);
-					_errHandler.sync(this);
-					_la = _input.LA(1);
-					if (_la==Newline) {
-						{
-						setState(158);
-						eos();
-						}
-					}
-
-					setState(161);
-					jsonPair();
-					}
-					}
-					setState(166);
-					_errHandler.sync(this);
-					_la = _input.LA(1);
-				}
-				setState(168);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				if (_la==Newline) {
-					{
-					setState(167);
-					eos();
-					}
-				}
-
-				setState(170);
-				match(RightBrace);
-				}
-				break;
-			case 2:
-				enterOuterAlt(_localctx, 2);
 				{
 				setState(172);
 				match(LeftBrace);
@@ -1184,6 +1195,63 @@ public class DomsaScriptParser extends Parser {
 				}
 
 				setState(176);
+				jsonPair();
+				setState(184);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				while (_la==Comma) {
+					{
+					{
+					setState(177);
+					match(Comma);
+					setState(179);
+					_errHandler.sync(this);
+					_la = _input.LA(1);
+					if (_la==Newline) {
+						{
+						setState(178);
+						eos();
+						}
+					}
+
+					setState(181);
+					jsonPair();
+					}
+					}
+					setState(186);
+					_errHandler.sync(this);
+					_la = _input.LA(1);
+				}
+				setState(188);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				if (_la==Newline) {
+					{
+					setState(187);
+					eos();
+					}
+				}
+
+				setState(190);
+				match(RightBrace);
+				}
+				break;
+			case 2:
+				enterOuterAlt(_localctx, 2);
+				{
+				setState(192);
+				match(LeftBrace);
+				setState(194);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				if (_la==Newline) {
+					{
+					setState(193);
+					eos();
+					}
+				}
+
+				setState(196);
 				match(RightBrace);
 				}
 				break;
@@ -1200,38 +1268,30 @@ public class DomsaScriptParser extends Parser {
 		return _localctx;
 	}
 
-	public static class JsonPairContext extends ParserRuleContext {
-		public TerminalNode Id() { return getToken(DomsaScriptParser.Id, 0); }
-		public TerminalNode Colon() { return getToken(DomsaScriptParser.Colon, 0); }
-		public JsonValueContext jsonValue() {
-			return getRuleContext(JsonValueContext.class,0);
-		}
-		public JsonPairContext(ParserRuleContext parent, int invokingState) {
+	public static class AssignOperContext extends ParserRuleContext {
+		public TerminalNode Assign() { return getToken(DomsaScriptParser.Assign, 0); }
+		public AssignOperContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_jsonPair; }
+		@Override public int getRuleIndex() { return RULE_assignOper; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonPair(this);
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssignOper(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonPair(this);
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssignOper(this);
 		}
 	}
 
-	public final JsonPairContext jsonPair() throws RecognitionException {
-		JsonPairContext _localctx = new JsonPairContext(_ctx, getState());
-		enterRule(_localctx, 30, RULE_jsonPair);
+	public final AssignOperContext assignOper() throws RecognitionException {
+		AssignOperContext _localctx = new AssignOperContext(_ctx, getState());
+		enterRule(_localctx, 30, RULE_assignOper);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(179);
-			match(Id);
-			setState(180);
-			match(Colon);
-			setState(181);
-			jsonValue();
+			setState(199);
+			match(Assign);
 			}
 		}
 		catch (RecognitionException re) {
@@ -1245,127 +1305,7 @@ public class DomsaScriptParser extends Parser {
 		return _localctx;
 	}
 
-	public static class JsonArrContext extends ParserRuleContext {
-		public TerminalNode LeftBracket() { return getToken(DomsaScriptParser.LeftBracket, 0); }
-		public List<JsonValueContext> jsonValue() {
-			return getRuleContexts(JsonValueContext.class);
-		}
-		public JsonValueContext jsonValue(int i) {
-			return getRuleContext(JsonValueContext.class,i);
-		}
-		public TerminalNode RightBracket() { return getToken(DomsaScriptParser.RightBracket, 0); }
-		public List<EosContext> eos() {
-			return getRuleContexts(EosContext.class);
-		}
-		public EosContext eos(int i) {
-			return getRuleContext(EosContext.class,i);
-		}
-		public List<TerminalNode> Comma() { return getTokens(DomsaScriptParser.Comma); }
-		public TerminalNode Comma(int i) {
-			return getToken(DomsaScriptParser.Comma, i);
-		}
-		public JsonArrContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
-		}
-		@Override public int getRuleIndex() { return RULE_jsonArr; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonArr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonArr(this);
-		}
-	}
-
-	public final JsonArrContext jsonArr() throws RecognitionException {
-		JsonArrContext _localctx = new JsonArrContext(_ctx, getState());
-		enterRule(_localctx, 32, RULE_jsonArr);
-		int _la;
-		try {
-			setState(205);
-			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,23,_ctx) ) {
-			case 1:
-				enterOuterAlt(_localctx, 1);
-				{
-				setState(183);
-				match(LeftBracket);
-				setState(185);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				if (_la==Newline) {
-					{
-					setState(184);
-					eos();
-					}
-				}
-
-				setState(187);
-				jsonValue();
-				setState(195);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				while (_la==Comma) {
-					{
-					{
-					setState(188);
-					match(Comma);
-					setState(190);
-					_errHandler.sync(this);
-					_la = _input.LA(1);
-					if (_la==Newline) {
-						{
-						setState(189);
-						eos();
-						}
-					}
-
-					setState(192);
-					jsonValue();
-					}
-					}
-					setState(197);
-					_errHandler.sync(this);
-					_la = _input.LA(1);
-				}
-				setState(199);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				if (_la==Newline) {
-					{
-					setState(198);
-					eos();
-					}
-				}
-
-				setState(201);
-				match(RightBracket);
-				}
-				break;
-			case 2:
-				enterOuterAlt(_localctx, 2);
-				{
-				setState(203);
-				match(LeftBracket);
-				setState(204);
-				match(RightBracket);
-				}
-				break;
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
-		finally {
-			exitRule();
-		}
-		return _localctx;
-	}
-
-	public static class JsonValueContext extends ParserRuleContext {
+	public static class AssignValueContext extends ParserRuleContext {
 		public ExprContext expr() {
 			return getRuleContext(ExprContext.class,0);
 		}
@@ -1375,25 +1315,25 @@ public class DomsaScriptParser extends Parser {
 		public JsonArrContext jsonArr() {
 			return getRuleContext(JsonArrContext.class,0);
 		}
-		public JsonValueContext(ParserRuleContext parent, int invokingState) {
+		public AssignValueContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_jsonValue; }
+		@Override public int getRuleIndex() { return RULE_assignValue; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonValue(this);
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssignValue(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonValue(this);
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssignValue(this);
 		}
 	}
 
-	public final JsonValueContext jsonValue() throws RecognitionException {
-		JsonValueContext _localctx = new JsonValueContext(_ctx, getState());
-		enterRule(_localctx, 34, RULE_jsonValue);
+	public final AssignValueContext assignValue() throws RecognitionException {
+		AssignValueContext _localctx = new AssignValueContext(_ctx, getState());
+		enterRule(_localctx, 32, RULE_assignValue);
 		try {
-			setState(210);
+			setState(206);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case False:
@@ -1406,26 +1346,85 @@ public class DomsaScriptParser extends Parser {
 			case String:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(207);
+				setState(201);
 				expr();
 				}
 				break;
+			case LeftBracket:
 			case LeftBrace:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(208);
-				jsonObj();
+				setState(204);
+				_errHandler.sync(this);
+				switch (_input.LA(1)) {
+				case LeftBrace:
+					{
+					setState(202);
+					jsonObj();
+					}
+					break;
+				case LeftBracket:
+					{
+					setState(203);
+					jsonArr();
+					}
+					break;
+				default:
+					throw new NoViableAltException(this);
 				}
-				break;
-			case LeftBracket:
-				enterOuterAlt(_localctx, 3);
-				{
-				setState(209);
-				jsonArr();
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class AssignContext extends ParserRuleContext {
+		public IdExprContext idExpr() {
+			return getRuleContext(IdExprContext.class,0);
+		}
+		public AssignOperContext assignOper() {
+			return getRuleContext(AssignOperContext.class,0);
+		}
+		public AssignValueContext assignValue() {
+			return getRuleContext(AssignValueContext.class,0);
+		}
+		public AssignContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_assign; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssign(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssign(this);
+		}
+	}
+
+	public final AssignContext assign() throws RecognitionException {
+		AssignContext _localctx = new AssignContext(_ctx, getState());
+		enterRule(_localctx, 34, RULE_assign);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(208);
+			idExpr();
+			setState(209);
+			assignOper();
+			setState(210);
+			assignValue();
 			}
 		}
 		catch (RecognitionException re) {
@@ -1996,77 +1995,77 @@ public class DomsaScriptParser extends Parser {
 		"\7b\n\7\f\7\16\7e\13\7\3\b\3\b\3\b\3\b\3\b\3\b\5\bm\n\b\3\t\3\t\3\t\7"+
 		"\tr\n\t\f\t\16\tu\13\t\3\n\3\n\3\n\7\nz\n\n\f\n\16\n}\13\n\3\13\3\13\3"+
 		"\13\7\13\u0082\n\13\f\13\16\13\u0085\13\13\3\f\3\f\3\f\3\f\3\f\5\f\u008c"+
-		"\n\f\3\r\3\r\3\r\3\r\3\16\3\16\3\17\3\17\3\17\5\17\u0097\n\17\5\17\u0099"+
-		"\n\17\3\20\3\20\5\20\u009d\n\20\3\20\3\20\3\20\5\20\u00a2\n\20\3\20\7"+
-		"\20\u00a5\n\20\f\20\16\20\u00a8\13\20\3\20\5\20\u00ab\n\20\3\20\3\20\3"+
-		"\20\3\20\5\20\u00b1\n\20\3\20\5\20\u00b4\n\20\3\21\3\21\3\21\3\21\3\22"+
-		"\3\22\5\22\u00bc\n\22\3\22\3\22\3\22\5\22\u00c1\n\22\3\22\7\22\u00c4\n"+
-		"\22\f\22\16\22\u00c7\13\22\3\22\5\22\u00ca\n\22\3\22\3\22\3\22\3\22\5"+
-		"\22\u00d0\n\22\3\23\3\23\3\23\5\23\u00d5\n\23\3\24\6\24\u00d8\n\24\r\24"+
-		"\16\24\u00d9\3\25\5\25\u00dd\n\25\3\25\3\25\3\25\3\25\3\25\3\25\5\25\u00e5"+
-		"\n\25\3\25\5\25\u00e8\n\25\3\26\3\26\3\27\3\27\5\27\u00ee\n\27\3\27\3"+
-		"\27\3\30\3\30\3\30\3\30\3\30\3\30\3\30\3\30\5\30\u00fa\n\30\3\30\3\30"+
-		"\5\30\u00fe\n\30\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31"+
-		"\5\31\u010b\n\31\3\32\3\32\3\32\3\33\7\33\u0111\n\33\f\33\16\33\u0114"+
-		"\13\33\3\33\3\33\3\33\2\2\34\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \""+
-		"$&(*,.\60\62\64\2\6\3\2\37!\4\2\33\33\35\35\3\2\27\32\3\2)*\2\u012b\2"+
-		"\66\3\2\2\2\4>\3\2\2\2\6L\3\2\2\2\bN\3\2\2\2\nV\3\2\2\2\f^\3\2\2\2\16"+
-		"l\3\2\2\2\20n\3\2\2\2\22v\3\2\2\2\24~\3\2\2\2\26\u008b\3\2\2\2\30\u008d"+
-		"\3\2\2\2\32\u0091\3\2\2\2\34\u0098\3\2\2\2\36\u00b3\3\2\2\2 \u00b5\3\2"+
-		"\2\2\"\u00cf\3\2\2\2$\u00d4\3\2\2\2&\u00d7\3\2\2\2(\u00dc\3\2\2\2*\u00e9"+
-		"\3\2\2\2,\u00eb\3\2\2\2.\u00f1\3\2\2\2\60\u010a\3\2\2\2\62\u010c\3\2\2"+
-		"\2\64\u0112\3\2\2\2\66;\7,\2\2\678\7+\2\28:\7,\2\29\67\3\2\2\2:=\3\2\2"+
-		"\2;9\3\2\2\2;<\3\2\2\2<\3\3\2\2\2=;\3\2\2\2>?\7,\2\2?A\7\21\2\2@B\5\26"+
-		"\f\2A@\3\2\2\2AB\3\2\2\2BC\3\2\2\2CD\7\22\2\2D\5\3\2\2\2EM\7-\2\2FM\5"+
-		"\4\3\2GM\5\2\2\2HI\7\21\2\2IJ\5\n\6\2JK\7\22\2\2KM\3\2\2\2LE\3\2\2\2L"+
-		"F\3\2\2\2LG\3\2\2\2LH\3\2\2\2M\7\3\2\2\2NS\5\6\4\2OP\t\2\2\2PR\5\6\4\2"+
-		"QO\3\2\2\2RU\3\2\2\2SQ\3\2\2\2ST\3\2\2\2T\t\3\2\2\2US\3\2\2\2V[\5\b\5"+
-		"\2WX\t\3\2\2XZ\5\b\5\2YW\3\2\2\2Z]\3\2\2\2[Y\3\2\2\2[\\\3\2\2\2\\\13\3"+
-		"\2\2\2][\3\2\2\2^c\5\n\6\2_`\t\4\2\2`b\5\n\6\2a_\3\2\2\2be\3\2\2\2ca\3"+
-		"\2\2\2cd\3\2\2\2d\r\3\2\2\2ec\3\2\2\2fm\5\f\7\2gm\7\60\2\2hm\7/\2\2im"+
-		"\7\17\2\2jm\7\7\2\2km\7\f\2\2lf\3\2\2\2lg\3\2\2\2lh\3\2\2\2li\3\2\2\2"+
-		"lj\3\2\2\2lk\3\2\2\2m\17\3\2\2\2ns\5\16\b\2op\t\5\2\2pr\5\16\b\2qo\3\2"+
-		"\2\2ru\3\2\2\2sq\3\2\2\2st\3\2\2\2t\21\3\2\2\2us\3\2\2\2v{\5\20\t\2wx"+
-		"\7\"\2\2xz\5\20\t\2yw\3\2\2\2z}\3\2\2\2{y\3\2\2\2{|\3\2\2\2|\23\3\2\2"+
-		"\2}{\3\2\2\2~\u0083\5\22\n\2\177\u0080\7#\2\2\u0080\u0082\5\22\n\2\u0081"+
+		"\n\f\3\r\3\r\3\r\5\r\u0091\n\r\3\16\3\16\3\16\3\16\3\17\3\17\5\17\u0099"+
+		"\n\17\3\17\3\17\3\17\5\17\u009e\n\17\3\17\7\17\u00a1\n\17\f\17\16\17\u00a4"+
+		"\13\17\3\17\5\17\u00a7\n\17\3\17\3\17\3\17\3\17\5\17\u00ad\n\17\3\20\3"+
+		"\20\5\20\u00b1\n\20\3\20\3\20\3\20\5\20\u00b6\n\20\3\20\7\20\u00b9\n\20"+
+		"\f\20\16\20\u00bc\13\20\3\20\5\20\u00bf\n\20\3\20\3\20\3\20\3\20\5\20"+
+		"\u00c5\n\20\3\20\5\20\u00c8\n\20\3\21\3\21\3\22\3\22\3\22\5\22\u00cf\n"+
+		"\22\5\22\u00d1\n\22\3\23\3\23\3\23\3\23\3\24\6\24\u00d8\n\24\r\24\16\24"+
+		"\u00d9\3\25\5\25\u00dd\n\25\3\25\3\25\3\25\3\25\3\25\3\25\5\25\u00e5\n"+
+		"\25\3\25\5\25\u00e8\n\25\3\26\3\26\3\27\3\27\5\27\u00ee\n\27\3\27\3\27"+
+		"\3\30\3\30\3\30\3\30\3\30\3\30\3\30\3\30\5\30\u00fa\n\30\3\30\3\30\5\30"+
+		"\u00fe\n\30\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\5\31"+
+		"\u010b\n\31\3\32\3\32\3\32\3\33\7\33\u0111\n\33\f\33\16\33\u0114\13\33"+
+		"\3\33\3\33\3\33\2\2\34\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,"+
+		".\60\62\64\2\6\3\2\37!\4\2\33\33\35\35\3\2\27\32\3\2)*\2\u012b\2\66\3"+
+		"\2\2\2\4>\3\2\2\2\6L\3\2\2\2\bN\3\2\2\2\nV\3\2\2\2\f^\3\2\2\2\16l\3\2"+
+		"\2\2\20n\3\2\2\2\22v\3\2\2\2\24~\3\2\2\2\26\u008b\3\2\2\2\30\u0090\3\2"+
+		"\2\2\32\u0092\3\2\2\2\34\u00ac\3\2\2\2\36\u00c7\3\2\2\2 \u00c9\3\2\2\2"+
+		"\"\u00d0\3\2\2\2$\u00d2\3\2\2\2&\u00d7\3\2\2\2(\u00dc\3\2\2\2*\u00e9\3"+
+		"\2\2\2,\u00eb\3\2\2\2.\u00f1\3\2\2\2\60\u010a\3\2\2\2\62\u010c\3\2\2\2"+
+		"\64\u0112\3\2\2\2\66;\7,\2\2\678\7+\2\28:\7,\2\29\67\3\2\2\2:=\3\2\2\2"+
+		";9\3\2\2\2;<\3\2\2\2<\3\3\2\2\2=;\3\2\2\2>?\7,\2\2?A\7\21\2\2@B\5\26\f"+
+		"\2A@\3\2\2\2AB\3\2\2\2BC\3\2\2\2CD\7\22\2\2D\5\3\2\2\2EM\7-\2\2FM\5\4"+
+		"\3\2GM\5\2\2\2HI\7\21\2\2IJ\5\n\6\2JK\7\22\2\2KM\3\2\2\2LE\3\2\2\2LF\3"+
+		"\2\2\2LG\3\2\2\2LH\3\2\2\2M\7\3\2\2\2NS\5\6\4\2OP\t\2\2\2PR\5\6\4\2QO"+
+		"\3\2\2\2RU\3\2\2\2SQ\3\2\2\2ST\3\2\2\2T\t\3\2\2\2US\3\2\2\2V[\5\b\5\2"+
+		"WX\t\3\2\2XZ\5\b\5\2YW\3\2\2\2Z]\3\2\2\2[Y\3\2\2\2[\\\3\2\2\2\\\13\3\2"+
+		"\2\2][\3\2\2\2^c\5\n\6\2_`\t\4\2\2`b\5\n\6\2a_\3\2\2\2be\3\2\2\2ca\3\2"+
+		"\2\2cd\3\2\2\2d\r\3\2\2\2ec\3\2\2\2fm\5\f\7\2gm\7\60\2\2hm\7/\2\2im\7"+
+		"\17\2\2jm\7\7\2\2km\7\f\2\2lf\3\2\2\2lg\3\2\2\2lh\3\2\2\2li\3\2\2\2lj"+
+		"\3\2\2\2lk\3\2\2\2m\17\3\2\2\2ns\5\16\b\2op\t\5\2\2pr\5\16\b\2qo\3\2\2"+
+		"\2ru\3\2\2\2sq\3\2\2\2st\3\2\2\2t\21\3\2\2\2us\3\2\2\2v{\5\20\t\2wx\7"+
+		"\"\2\2xz\5\20\t\2yw\3\2\2\2z}\3\2\2\2{y\3\2\2\2{|\3\2\2\2|\23\3\2\2\2"+
+		"}{\3\2\2\2~\u0083\5\22\n\2\177\u0080\7#\2\2\u0080\u0082\5\22\n\2\u0081"+
 		"\177\3\2\2\2\u0082\u0085\3\2\2\2\u0083\u0081\3\2\2\2\u0083\u0084\3\2\2"+
 		"\2\u0084\25\3\2\2\2\u0085\u0083\3\2\2\2\u0086\u008c\5\24\13\2\u0087\u0088"+
 		"\7\21\2\2\u0088\u0089\5\26\f\2\u0089\u008a\7\22\2\2\u008a\u008c\3\2\2"+
-		"\2\u008b\u0086\3\2\2\2\u008b\u0087\3\2\2\2\u008c\27\3\2\2\2\u008d\u008e"+
-		"\5\2\2\2\u008e\u008f\5\32\16\2\u008f\u0090\5\34\17\2\u0090\31\3\2\2\2"+
-		"\u0091\u0092\7(\2\2\u0092\33\3\2\2\2\u0093\u0099\5\26\f\2\u0094\u0097"+
-		"\5\36\20\2\u0095\u0097\5\"\22\2\u0096\u0094\3\2\2\2\u0096\u0095\3\2\2"+
-		"\2\u0097\u0099\3\2\2\2\u0098\u0093\3\2\2\2\u0098\u0096\3\2\2\2\u0099\35"+
-		"\3\2\2\2\u009a\u009c\7\25\2\2\u009b\u009d\5&\24\2\u009c\u009b\3\2\2\2"+
-		"\u009c\u009d\3\2\2\2\u009d\u009e\3\2\2\2\u009e\u00a6\5 \21\2\u009f\u00a1"+
-		"\7\'\2\2\u00a0\u00a2\5&\24\2\u00a1\u00a0\3\2\2\2\u00a1\u00a2\3\2\2\2\u00a2"+
-		"\u00a3\3\2\2\2\u00a3\u00a5\5 \21\2\u00a4\u009f\3\2\2\2\u00a5\u00a8\3\2"+
-		"\2\2\u00a6\u00a4\3\2\2\2\u00a6\u00a7\3\2\2\2\u00a7\u00aa\3\2\2\2\u00a8"+
-		"\u00a6\3\2\2\2\u00a9\u00ab\5&\24\2\u00aa\u00a9\3\2\2\2\u00aa\u00ab\3\2"+
-		"\2\2\u00ab\u00ac\3\2\2\2\u00ac\u00ad\7\26\2\2\u00ad\u00b4\3\2\2\2\u00ae"+
-		"\u00b0\7\25\2\2\u00af\u00b1\5&\24\2\u00b0\u00af\3\2\2\2\u00b0\u00b1\3"+
-		"\2\2\2\u00b1\u00b2\3\2\2\2\u00b2\u00b4\7\26\2\2\u00b3\u009a\3\2\2\2\u00b3"+
-		"\u00ae\3\2\2\2\u00b4\37\3\2\2\2\u00b5\u00b6\7,\2\2\u00b6\u00b7\7&\2\2"+
-		"\u00b7\u00b8\5$\23\2\u00b8!\3\2\2\2\u00b9\u00bb\7\23\2\2\u00ba\u00bc\5"+
-		"&\24\2\u00bb\u00ba\3\2\2\2\u00bb\u00bc\3\2\2\2\u00bc\u00bd\3\2\2\2\u00bd"+
-		"\u00c5\5$\23\2\u00be\u00c0\7\'\2\2\u00bf\u00c1\5&\24\2\u00c0\u00bf\3\2"+
-		"\2\2\u00c0\u00c1\3\2\2\2\u00c1\u00c2\3\2\2\2\u00c2\u00c4\5$\23\2\u00c3"+
-		"\u00be\3\2\2\2\u00c4\u00c7\3\2\2\2\u00c5\u00c3\3\2\2\2\u00c5\u00c6\3\2"+
-		"\2\2\u00c6\u00c9\3\2\2\2\u00c7\u00c5\3\2\2\2\u00c8\u00ca\5&\24\2\u00c9"+
-		"\u00c8\3\2\2\2\u00c9\u00ca\3\2\2\2\u00ca\u00cb\3\2\2\2\u00cb\u00cc\7\24"+
-		"\2\2\u00cc\u00d0\3\2\2\2\u00cd\u00ce\7\23\2\2\u00ce\u00d0\7\24\2\2\u00cf"+
-		"\u00b9\3\2\2\2\u00cf\u00cd\3\2\2\2\u00d0#\3\2\2\2\u00d1\u00d5\5\26\f\2"+
-		"\u00d2\u00d5\5\36\20\2\u00d3\u00d5\5\"\22\2\u00d4\u00d1\3\2\2\2\u00d4"+
-		"\u00d2\3\2\2\2\u00d4\u00d3\3\2\2\2\u00d5%\3\2\2\2\u00d6\u00d8\7\62\2\2"+
-		"\u00d7\u00d6\3\2\2\2\u00d8\u00d9\3\2\2\2\u00d9\u00d7\3\2\2\2\u00d9\u00da"+
+		"\2\u008b\u0086\3\2\2\2\u008b\u0087\3\2\2\2\u008c\27\3\2\2\2\u008d\u0091"+
+		"\5\26\f\2\u008e\u0091\5\36\20\2\u008f\u0091\5\34\17\2\u0090\u008d\3\2"+
+		"\2\2\u0090\u008e\3\2\2\2\u0090\u008f\3\2\2\2\u0091\31\3\2\2\2\u0092\u0093"+
+		"\7,\2\2\u0093\u0094\7&\2\2\u0094\u0095\5\30\r\2\u0095\33\3\2\2\2\u0096"+
+		"\u0098\7\23\2\2\u0097\u0099\5&\24\2\u0098\u0097\3\2\2\2\u0098\u0099\3"+
+		"\2\2\2\u0099\u009a\3\2\2\2\u009a\u00a2\5\30\r\2\u009b\u009d\7\'\2\2\u009c"+
+		"\u009e\5&\24\2\u009d\u009c\3\2\2\2\u009d\u009e\3\2\2\2\u009e\u009f\3\2"+
+		"\2\2\u009f\u00a1\5\30\r\2\u00a0\u009b\3\2\2\2\u00a1\u00a4\3\2\2\2\u00a2"+
+		"\u00a0\3\2\2\2\u00a2\u00a3\3\2\2\2\u00a3\u00a6\3\2\2\2\u00a4\u00a2\3\2"+
+		"\2\2\u00a5\u00a7\5&\24\2\u00a6\u00a5\3\2\2\2\u00a6\u00a7\3\2\2\2\u00a7"+
+		"\u00a8\3\2\2\2\u00a8\u00a9\7\24\2\2\u00a9\u00ad\3\2\2\2\u00aa\u00ab\7"+
+		"\23\2\2\u00ab\u00ad\7\24\2\2\u00ac\u0096\3\2\2\2\u00ac\u00aa\3\2\2\2\u00ad"+
+		"\35\3\2\2\2\u00ae\u00b0\7\25\2\2\u00af\u00b1\5&\24\2\u00b0\u00af\3\2\2"+
+		"\2\u00b0\u00b1\3\2\2\2\u00b1\u00b2\3\2\2\2\u00b2\u00ba\5\32\16\2\u00b3"+
+		"\u00b5\7\'\2\2\u00b4\u00b6\5&\24\2\u00b5\u00b4\3\2\2\2\u00b5\u00b6\3\2"+
+		"\2\2\u00b6\u00b7\3\2\2\2\u00b7\u00b9\5\32\16\2\u00b8\u00b3\3\2\2\2\u00b9"+
+		"\u00bc\3\2\2\2\u00ba\u00b8\3\2\2\2\u00ba\u00bb\3\2\2\2\u00bb\u00be\3\2"+
+		"\2\2\u00bc\u00ba\3\2\2\2\u00bd\u00bf\5&\24\2\u00be\u00bd\3\2\2\2\u00be"+
+		"\u00bf\3\2\2\2\u00bf\u00c0\3\2\2\2\u00c0\u00c1\7\26\2\2\u00c1\u00c8\3"+
+		"\2\2\2\u00c2\u00c4\7\25\2\2\u00c3\u00c5\5&\24\2\u00c4\u00c3\3\2\2\2\u00c4"+
+		"\u00c5\3\2\2\2\u00c5\u00c6\3\2\2\2\u00c6\u00c8\7\26\2\2\u00c7\u00ae\3"+
+		"\2\2\2\u00c7\u00c2\3\2\2\2\u00c8\37\3\2\2\2\u00c9\u00ca\7(\2\2\u00ca!"+
+		"\3\2\2\2\u00cb\u00d1\5\26\f\2\u00cc\u00cf\5\36\20\2\u00cd\u00cf\5\34\17"+
+		"\2\u00ce\u00cc\3\2\2\2\u00ce\u00cd\3\2\2\2\u00cf\u00d1\3\2\2\2\u00d0\u00cb"+
+		"\3\2\2\2\u00d0\u00ce\3\2\2\2\u00d1#\3\2\2\2\u00d2\u00d3\5\2\2\2\u00d3"+
+		"\u00d4\5 \21\2\u00d4\u00d5\5\"\22\2\u00d5%\3\2\2\2\u00d6\u00d8\7\62\2"+
+		"\2\u00d7\u00d6\3\2\2\2\u00d8\u00d9\3\2\2\2\u00d9\u00d7\3\2\2\2\u00d9\u00da"+
 		"\3\2\2\2\u00da\'\3\2\2\2\u00db\u00dd\5&\24\2\u00dc\u00db\3\2\2\2\u00dc"+
 		"\u00dd\3\2\2\2\u00dd\u00e4\3\2\2\2\u00de\u00e5\5,\27\2\u00df\u00e5\5*"+
 		"\26\2\u00e0\u00e5\5.\30\2\u00e1\u00e5\5\60\31\2\u00e2\u00e5\5\62\32\2"+
 		"\u00e3\u00e5\5&\24\2\u00e4\u00de\3\2\2\2\u00e4\u00df\3\2\2\2\u00e4\u00e0"+
 		"\3\2\2\2\u00e4\u00e1\3\2\2\2\u00e4\u00e2\3\2\2\2\u00e4\u00e3\3\2\2\2\u00e5"+
 		"\u00e7\3\2\2\2\u00e6\u00e8\5&\24\2\u00e7\u00e6\3\2\2\2\u00e7\u00e8\3\2"+
-		"\2\2\u00e8)\3\2\2\2\u00e9\u00ea\5\30\r\2\u00ea+\3\2\2\2\u00eb\u00ed\7"+
-		"\25\2\2\u00ec\u00ee\5(\25\2\u00ed\u00ec\3\2\2\2\u00ed\u00ee\3\2\2\2\u00ee"+
+		"\2\2\u00e8)\3\2\2\2\u00e9\u00ea\5$\23\2\u00ea+\3\2\2\2\u00eb\u00ed\7\25"+
+		"\2\2\u00ec\u00ee\5(\25\2\u00ed\u00ec\3\2\2\2\u00ed\u00ee\3\2\2\2\u00ee"+
 		"\u00ef\3\2\2\2\u00ef\u00f0\7\26\2\2\u00f0-\3\2\2\2\u00f1\u00f2\7\t\2\2"+
 		"\u00f2\u00f3\5\26\f\2\u00f3\u00f9\5,\27\2\u00f4\u00f5\7\6\2\2\u00f5\u00f6"+
 		"\7\t\2\2\u00f6\u00f7\5\26\f\2\u00f7\u00f8\5,\27\2\u00f8\u00fa\3\2\2\2"+
@@ -2079,9 +2078,9 @@ public class DomsaScriptParser extends Parser {
 		"\3\2\2\2\u010b\61\3\2\2\2\u010c\u010d\7\r\2\2\u010d\u010e\5\26\f\2\u010e"+
 		"\63\3\2\2\2\u010f\u0111\5(\25\2\u0110\u010f\3\2\2\2\u0111\u0114\3\2\2"+
 		"\2\u0112\u0110\3\2\2\2\u0112\u0113\3\2\2\2\u0113\u0115\3\2\2\2\u0114\u0112"+
-		"\3\2\2\2\u0115\u0116\7\2\2\3\u0116\65\3\2\2\2$;ALS[cls{\u0083\u008b\u0096"+
-		"\u0098\u009c\u00a1\u00a6\u00aa\u00b0\u00b3\u00bb\u00c0\u00c5\u00c9\u00cf"+
-		"\u00d4\u00d9\u00dc\u00e4\u00e7\u00ed\u00f9\u00fd\u010a\u0112";
+		"\3\2\2\2\u0115\u0116\7\2\2\3\u0116\65\3\2\2\2$;ALS[cls{\u0083\u008b\u0090"+
+		"\u0098\u009d\u00a2\u00a6\u00ac\u00b0\u00b5\u00ba\u00be\u00c4\u00c7\u00ce"+
+		"\u00d0\u00d9\u00dc\u00e4\u00e7\u00ed\u00f9\u00fd\u010a\u0112";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

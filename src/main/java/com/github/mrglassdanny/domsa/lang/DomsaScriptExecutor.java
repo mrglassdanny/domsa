@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class DomsaScriptExecutor extends DomsaScriptBaseListener {
 
-    public HashMap<String, Object> variables;
+    public HashMap<DomsaVariable, Object> variables;
 
     public DomsaScriptExecutor() {
         this.variables = new HashMap<>();
@@ -127,43 +127,13 @@ public class DomsaScriptExecutor extends DomsaScriptBaseListener {
     }
 
     @Override
-    public void enterAssign(DomsaScriptParser.AssignContext ctx) {
-        super.enterAssign(ctx);
+    public void enterJsonValue(DomsaScriptParser.JsonValueContext ctx) {
+        super.enterJsonValue(ctx);
     }
 
     @Override
-    public void exitAssign(DomsaScriptParser.AssignContext ctx) {
-        super.exitAssign(ctx);
-    }
-
-    @Override
-    public void enterAssignOper(DomsaScriptParser.AssignOperContext ctx) {
-        super.enterAssignOper(ctx);
-    }
-
-    @Override
-    public void exitAssignOper(DomsaScriptParser.AssignOperContext ctx) {
-        super.exitAssignOper(ctx);
-    }
-
-    @Override
-    public void enterAssignValue(DomsaScriptParser.AssignValueContext ctx) {
-        super.enterAssignValue(ctx);
-    }
-
-    @Override
-    public void exitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
-        super.exitAssignValue(ctx);
-    }
-
-    @Override
-    public void enterJsonObj(DomsaScriptParser.JsonObjContext ctx) {
-        super.enterJsonObj(ctx);
-    }
-
-    @Override
-    public void exitJsonObj(DomsaScriptParser.JsonObjContext ctx) {
-        super.exitJsonObj(ctx);
+    public void exitJsonValue(DomsaScriptParser.JsonValueContext ctx) {
+        super.exitJsonValue(ctx);
     }
 
     @Override
@@ -187,13 +157,43 @@ public class DomsaScriptExecutor extends DomsaScriptBaseListener {
     }
 
     @Override
-    public void enterJsonValue(DomsaScriptParser.JsonValueContext ctx) {
-        super.enterJsonValue(ctx);
+    public void enterJsonObj(DomsaScriptParser.JsonObjContext ctx) {
+        super.enterJsonObj(ctx);
     }
 
     @Override
-    public void exitJsonValue(DomsaScriptParser.JsonValueContext ctx) {
-        super.exitJsonValue(ctx);
+    public void exitJsonObj(DomsaScriptParser.JsonObjContext ctx) {
+        super.exitJsonObj(ctx);
+    }
+
+    @Override
+    public void enterAssignOper(DomsaScriptParser.AssignOperContext ctx) {
+        super.enterAssignOper(ctx);
+    }
+
+    @Override
+    public void exitAssignOper(DomsaScriptParser.AssignOperContext ctx) {
+        super.exitAssignOper(ctx);
+    }
+
+    @Override
+    public void enterAssignValue(DomsaScriptParser.AssignValueContext ctx) {
+        super.enterAssignValue(ctx);
+    }
+
+    @Override
+    public void exitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
+        super.exitAssignValue(ctx);
+    }
+
+    @Override
+    public void enterAssign(DomsaScriptParser.AssignContext ctx) {
+        super.enterAssign(ctx);
+    }
+
+    @Override
+    public void exitAssign(DomsaScriptParser.AssignContext ctx) {
+        super.exitAssign(ctx);
     }
 
     @Override

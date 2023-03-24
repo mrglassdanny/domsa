@@ -120,45 +120,15 @@ public interface DomsaScriptListener extends ParseTreeListener {
 	 */
 	void exitExpr(DomsaScriptParser.ExprContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link DomsaScriptParser#assign}.
+	 * Enter a parse tree produced by {@link DomsaScriptParser#jsonValue}.
 	 * @param ctx the parse tree
 	 */
-	void enterAssign(DomsaScriptParser.AssignContext ctx);
+	void enterJsonValue(DomsaScriptParser.JsonValueContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link DomsaScriptParser#assign}.
+	 * Exit a parse tree produced by {@link DomsaScriptParser#jsonValue}.
 	 * @param ctx the parse tree
 	 */
-	void exitAssign(DomsaScriptParser.AssignContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link DomsaScriptParser#assignOper}.
-	 * @param ctx the parse tree
-	 */
-	void enterAssignOper(DomsaScriptParser.AssignOperContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link DomsaScriptParser#assignOper}.
-	 * @param ctx the parse tree
-	 */
-	void exitAssignOper(DomsaScriptParser.AssignOperContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link DomsaScriptParser#assignValue}.
-	 * @param ctx the parse tree
-	 */
-	void enterAssignValue(DomsaScriptParser.AssignValueContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link DomsaScriptParser#assignValue}.
-	 * @param ctx the parse tree
-	 */
-	void exitAssignValue(DomsaScriptParser.AssignValueContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link DomsaScriptParser#jsonObj}.
-	 * @param ctx the parse tree
-	 */
-	void enterJsonObj(DomsaScriptParser.JsonObjContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link DomsaScriptParser#jsonObj}.
-	 * @param ctx the parse tree
-	 */
-	void exitJsonObj(DomsaScriptParser.JsonObjContext ctx);
+	void exitJsonValue(DomsaScriptParser.JsonValueContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link DomsaScriptParser#jsonPair}.
 	 * @param ctx the parse tree
@@ -180,15 +150,45 @@ public interface DomsaScriptListener extends ParseTreeListener {
 	 */
 	void exitJsonArr(DomsaScriptParser.JsonArrContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link DomsaScriptParser#jsonValue}.
+	 * Enter a parse tree produced by {@link DomsaScriptParser#jsonObj}.
 	 * @param ctx the parse tree
 	 */
-	void enterJsonValue(DomsaScriptParser.JsonValueContext ctx);
+	void enterJsonObj(DomsaScriptParser.JsonObjContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link DomsaScriptParser#jsonValue}.
+	 * Exit a parse tree produced by {@link DomsaScriptParser#jsonObj}.
 	 * @param ctx the parse tree
 	 */
-	void exitJsonValue(DomsaScriptParser.JsonValueContext ctx);
+	void exitJsonObj(DomsaScriptParser.JsonObjContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link DomsaScriptParser#assignOper}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignOper(DomsaScriptParser.AssignOperContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link DomsaScriptParser#assignOper}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignOper(DomsaScriptParser.AssignOperContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link DomsaScriptParser#assignValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignValue(DomsaScriptParser.AssignValueContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link DomsaScriptParser#assignValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignValue(DomsaScriptParser.AssignValueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link DomsaScriptParser#assign}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssign(DomsaScriptParser.AssignContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link DomsaScriptParser#assign}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssign(DomsaScriptParser.AssignContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link DomsaScriptParser#eos}.
 	 * @param ctx the parse tree
