@@ -2,15 +2,13 @@ package com.github.mrglassdanny.domsa;
 
 
 import com.github.mrglassdanny.domsa.api.ApiClient;
-import com.github.mrglassdanny.domsa.lang.DomsaScriptExecutor;
+import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.sql.SqlClient;
 import io.javalin.Javalin;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -30,7 +28,7 @@ public class Main {
             var parser = new DomsaScriptParser(
                     new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
             var scriptCtx = parser.script();
-            DomsaScriptExecutor exec = new DomsaScriptExecutor();
+            DomsaScriptInterpreter exec = new DomsaScriptInterpreter();
             exec.visitScript(scriptCtx);
 
             ctx.status(200);

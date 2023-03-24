@@ -1,6 +1,6 @@
 package com.github.mrglassdanny.domsa.lang;
 
-public enum DomsaType {
+public enum DomsaScriptType {
     Unknown,
     Boolean,
     Number,

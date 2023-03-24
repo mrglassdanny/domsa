@@ -7,11 +7,11 @@ import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
+public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
-    private HashMap<String, DomsaVariable> variables;
+    private HashMap<String, DomsaScriptVariable> variables;
 
-    public DomsaScriptExecutor() {
+    public DomsaScriptInterpreter() {
         this.variables = new HashMap<>();
     }
 
@@ -21,11 +21,11 @@ public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public DomsaVariable visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
+    public DomsaScriptVariable visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
 
         String fnName = ctx.Id().getText();
 
-        DomsaType typ = DomsaType.Unknown;
+        DomsaScriptType typ = DomsaScriptType.Unknown;
         Object obj = null;
 
         if (fnName.equals("sql")) {
@@ -36,7 +36,7 @@ public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
 
         }
 
-        return new DomsaVariable(typ, obj);
+        return new DomsaScriptVariable(typ, obj);
     }
 
     @Override
@@ -60,42 +60,46 @@ public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public DomsaVariable visitEqValue(DomsaScriptParser.EqValueContext ctx) {
+    public DomsaScriptVariable visitEqValue(DomsaScriptParser.EqValueContext ctx) {
         return super.visitEqValue(ctx);
     }
 
     @Override
-    public DomsaVariable visitEqExpr(DomsaScriptParser.EqExprContext ctx) {
+    public DomsaScriptVariable visitEqExpr(DomsaScriptParser.EqExprContext ctx) {
         if (ctx.eqValue().size() == 0) {
             return this.visitEqValue(ctx.eqValue(0));
         } else {
-            var exprs = new ArrayList<DomsaVariable>();
+            var exprs = new ArrayList<DomsaScriptVariable>();
 
             for (var exprCtx : ctx.eqValue()) {
                 exprs.add(this.visitEqValue(exprCtx));
             }
 
-
-
-            if (ctx.Equal().size() != 0) {
-
-            } else {
-
+            for (int exprIdx = 0, operIdx = 1; exprIdx < exprs.size() - 1; exprIdx++, operIdx += 2) {
+                if (ctx.children.get(operIdx).getText().equals("==")) {
+                    if (!exprs.get(exprIdx).equals(exprs.get(exprIdx + 1))) {
+                        return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                    }
+                } else {
+                    if (exprs.get(exprIdx).equals(exprs.get(exprIdx + 1))) {
+                        return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                    }
+                }
             }
 
-            return new DomsaVariable(DomsaType.Boolean, true);
+            return new DomsaScriptVariable(DomsaScriptType.Boolean, true);
         }
     }
 
     @Override
-    public DomsaVariable visitLogAndExpr(DomsaScriptParser.LogAndExprContext ctx) {
+    public DomsaScriptVariable visitLogAndExpr(DomsaScriptParser.LogAndExprContext ctx) {
         if (ctx.And().size() == 0) {
-            return this.visitLogEqExpr(ctx.logEqExpr(0));
+            return this.visitEqExpr(ctx.eqExpr(0));
         } else {
-            var exprs = new ArrayList<DomsaVariable>();
+            var exprs = new ArrayList<DomsaScriptVariable>();
 
-            for (var exprCtx : ctx.logEqExpr()) {
-                exprs.add(this.visitLogEqExpr(exprCtx));
+            for (var exprCtx : ctx.eqExpr()) {
+                exprs.add(this.visitEqExpr(exprCtx));
             }
 
             for (var expr : exprs) {
@@ -103,16 +107,16 @@ public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
                     return expr;
             }
 
-            return new DomsaVariable(DomsaType.Boolean, true);
+            return new DomsaScriptVariable(DomsaScriptType.Boolean, true);
         }
     }
 
     @Override
-    public DomsaVariable visitLogOrExpr(DomsaScriptParser.LogOrExprContext ctx) {
+    public DomsaScriptVariable visitLogOrExpr(DomsaScriptParser.LogOrExprContext ctx) {
         if (ctx.Or().size() == 0) {
             return this.visitLogAndExpr(ctx.logAndExpr(0));
         } else {
-            var exprs = new ArrayList<DomsaVariable>();
+            var exprs = new ArrayList<DomsaScriptVariable>();
 
             for (var exprCtx : ctx.logAndExpr()) {
                 exprs.add(this.visitLogAndExpr(exprCtx));
@@ -123,7 +127,7 @@ public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
                     return expr;
             }
 
-            return new DomsaVariable(DomsaType.Boolean, false);
+            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
         }
     }
 
@@ -165,7 +169,7 @@ public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
     @Override
     public Object visitAssign(DomsaScriptParser.AssignContext ctx) {
 
-        DomsaType typ = DomsaType.Unknown;
+        DomsaScriptType typ = DomsaScriptType.Unknown;
         Object obj = null;
 
         if (ctx.assignValue().expr() != null) {
@@ -173,14 +177,14 @@ public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
         } else {
             if (ctx.assignValue().jsonObj() != null) {
                 obj = this.visitJsonObj(ctx.assignValue().jsonObj());
-                typ = DomsaType.Object;
+                typ = DomsaScriptType.Object;
             } else {
                 obj = this.visitJsonArr(ctx.assignValue().jsonArr());
-                typ = DomsaType.Array;
+                typ = DomsaScriptType.Array;
             }
         }
 
-        this.variables.put(ctx.idExpr().getText(), new DomsaVariable(typ, obj));
+        this.variables.put(ctx.idExpr().getText(), new DomsaScriptVariable(typ, obj));
 
         return super.visitAssign(ctx);
     }
