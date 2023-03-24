@@ -1,298 +1,227 @@
 package com.github.mrglassdanny.domsa.lang;
 
-import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseListener;
+import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import com.google.gson.JsonParser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public class DomsaScriptExecutor extends DomsaScriptBaseListener {
+public class DomsaScriptExecutor extends DomsaScriptBaseVisitor {
 
-    public HashMap<DomsaVariable, Object> variables;
+    private HashMap<String, DomsaVariable> variables;
 
     public DomsaScriptExecutor() {
         this.variables = new HashMap<>();
     }
 
     @Override
-    public void enterIdExpr(DomsaScriptParser.IdExprContext ctx) {
-        super.enterIdExpr(ctx);
+    public Object visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
+        return super.visitIdExpr(ctx);
     }
 
     @Override
-    public void exitIdExpr(DomsaScriptParser.IdExprContext ctx) {
-        super.exitIdExpr(ctx);
+    public DomsaVariable visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
+
+        String fnName = ctx.Id().getText();
+
+        DomsaType typ = DomsaType.Unknown;
+        Object obj = null;
+
+        if (fnName.equals("sql")) {
+
+        } else if (fnName.equals("get")) {
+
+        } else if (fnName.equals("post")) {
+
+        }
+
+        return new DomsaVariable(typ, obj);
     }
 
     @Override
-    public void enterFnExpr(DomsaScriptParser.FnExprContext ctx) {
-        super.enterFnExpr(ctx);
+    public Object visitArithExpr(DomsaScriptParser.ArithExprContext ctx) {
+        return super.visitArithExpr(ctx);
     }
 
     @Override
-    public void exitFnExpr(DomsaScriptParser.FnExprContext ctx) {
-        super.exitFnExpr(ctx);
+    public Object visitMulExpr(DomsaScriptParser.MulExprContext ctx) {
+        return super.visitMulExpr(ctx);
     }
 
     @Override
-    public void enterArithExpr(DomsaScriptParser.ArithExprContext ctx) {
-        super.enterArithExpr(ctx);
+    public Object visitAddExpr(DomsaScriptParser.AddExprContext ctx) {
+        return super.visitAddExpr(ctx);
     }
 
     @Override
-    public void exitArithExpr(DomsaScriptParser.ArithExprContext ctx) {
-        super.exitArithExpr(ctx);
+    public Object visitRelExpr(DomsaScriptParser.RelExprContext ctx) {
+        return super.visitRelExpr(ctx);
     }
 
     @Override
-    public void enterMulExpr(DomsaScriptParser.MulExprContext ctx) {
-        super.enterMulExpr(ctx);
+    public DomsaVariable visitEqValue(DomsaScriptParser.EqValueContext ctx) {
+        return super.visitEqValue(ctx);
     }
 
     @Override
-    public void exitMulExpr(DomsaScriptParser.MulExprContext ctx) {
-        super.exitMulExpr(ctx);
+    public DomsaVariable visitEqExpr(DomsaScriptParser.EqExprContext ctx) {
+        if (ctx.eqValue().size() == 0) {
+            return this.visitEqValue(ctx.eqValue(0));
+        } else {
+            var exprs = new ArrayList<DomsaVariable>();
+
+            for (var exprCtx : ctx.eqValue()) {
+                exprs.add(this.visitEqValue(exprCtx));
+            }
+
+
+
+            if (ctx.Equal().size() != 0) {
+
+            } else {
+
+            }
+
+            return new DomsaVariable(DomsaType.Boolean, true);
+        }
     }
 
     @Override
-    public void enterAddExpr(DomsaScriptParser.AddExprContext ctx) {
-        super.enterAddExpr(ctx);
+    public DomsaVariable visitLogAndExpr(DomsaScriptParser.LogAndExprContext ctx) {
+        if (ctx.And().size() == 0) {
+            return this.visitLogEqExpr(ctx.logEqExpr(0));
+        } else {
+            var exprs = new ArrayList<DomsaVariable>();
+
+            for (var exprCtx : ctx.logEqExpr()) {
+                exprs.add(this.visitLogEqExpr(exprCtx));
+            }
+
+            for (var expr : exprs) {
+                if (expr.data.equals(false))
+                    return expr;
+            }
+
+            return new DomsaVariable(DomsaType.Boolean, true);
+        }
     }
 
     @Override
-    public void exitAddExpr(DomsaScriptParser.AddExprContext ctx) {
-        super.exitAddExpr(ctx);
+    public DomsaVariable visitLogOrExpr(DomsaScriptParser.LogOrExprContext ctx) {
+        if (ctx.Or().size() == 0) {
+            return this.visitLogAndExpr(ctx.logAndExpr(0));
+        } else {
+            var exprs = new ArrayList<DomsaVariable>();
+
+            for (var exprCtx : ctx.logAndExpr()) {
+                exprs.add(this.visitLogAndExpr(exprCtx));
+            }
+
+            for (var expr : exprs) {
+                if (expr.data.equals(true))
+                    return expr;
+            }
+
+            return new DomsaVariable(DomsaType.Boolean, false);
+        }
     }
 
     @Override
-    public void enterRelExpr(DomsaScriptParser.RelExprContext ctx) {
-        super.enterRelExpr(ctx);
+    public Object visitExpr(DomsaScriptParser.ExprContext ctx) {
+        return super.visitExpr(ctx);
     }
 
     @Override
-    public void exitRelExpr(DomsaScriptParser.RelExprContext ctx) {
-        super.exitRelExpr(ctx);
+    public Object visitJsonValue(DomsaScriptParser.JsonValueContext ctx) {
+        return super.visitJsonValue(ctx);
     }
 
     @Override
-    public void enterEqValue(DomsaScriptParser.EqValueContext ctx) {
-        super.enterEqValue(ctx);
+    public Object visitJsonPair(DomsaScriptParser.JsonPairContext ctx) {
+        return super.visitJsonPair(ctx);
     }
 
     @Override
-    public void exitEqValue(DomsaScriptParser.EqValueContext ctx) {
-        super.exitEqValue(ctx);
+    public Object visitJsonArr(DomsaScriptParser.JsonArrContext ctx) {
+        return new JsonParser().parseString(ctx.getText());
     }
 
     @Override
-    public void enterEqExpr(DomsaScriptParser.EqExprContext ctx) {
-        super.enterEqExpr(ctx);
+    public Object visitJsonObj(DomsaScriptParser.JsonObjContext ctx) {
+        return super.visitJsonObj(ctx);
     }
 
     @Override
-    public void exitEqExpr(DomsaScriptParser.EqExprContext ctx) {
-        super.exitEqExpr(ctx);
+    public Object visitAssignOper(DomsaScriptParser.AssignOperContext ctx) {
+        return super.visitAssignOper(ctx);
     }
 
     @Override
-    public void enterLogAndExpr(DomsaScriptParser.LogAndExprContext ctx) {
-        super.enterLogAndExpr(ctx);
+    public Object visitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
+        return super.visitAssignValue(ctx);
     }
 
     @Override
-    public void exitLogAndExpr(DomsaScriptParser.LogAndExprContext ctx) {
-        super.exitLogAndExpr(ctx);
+    public Object visitAssign(DomsaScriptParser.AssignContext ctx) {
+
+        DomsaType typ = DomsaType.Unknown;
+        Object obj = null;
+
+        if (ctx.assignValue().expr() != null) {
+            obj = this.visitExpr(ctx.assignValue().expr());
+        } else {
+            if (ctx.assignValue().jsonObj() != null) {
+                obj = this.visitJsonObj(ctx.assignValue().jsonObj());
+                typ = DomsaType.Object;
+            } else {
+                obj = this.visitJsonArr(ctx.assignValue().jsonArr());
+                typ = DomsaType.Array;
+            }
+        }
+
+        this.variables.put(ctx.idExpr().getText(), new DomsaVariable(typ, obj));
+
+        return super.visitAssign(ctx);
     }
 
     @Override
-    public void enterLogOrExpr(DomsaScriptParser.LogOrExprContext ctx) {
-        super.enterLogOrExpr(ctx);
+    public Object visitEos(DomsaScriptParser.EosContext ctx) {
+        return super.visitEos(ctx);
     }
 
     @Override
-    public void exitLogOrExpr(DomsaScriptParser.LogOrExprContext ctx) {
-        super.exitLogOrExpr(ctx);
+    public Object visitStmt(DomsaScriptParser.StmtContext ctx) {
+        return super.visitStmt(ctx);
     }
 
     @Override
-    public void enterExpr(DomsaScriptParser.ExprContext ctx) {
-        super.enterExpr(ctx);
+    public Object visitAssignStmt(DomsaScriptParser.AssignStmtContext ctx) {
+        return super.visitAssignStmt(ctx);
     }
 
     @Override
-    public void exitExpr(DomsaScriptParser.ExprContext ctx) {
-        super.exitExpr(ctx);
+    public Object visitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
+        return super.visitNestStmt(ctx);
     }
 
     @Override
-    public void enterJsonValue(DomsaScriptParser.JsonValueContext ctx) {
-        super.enterJsonValue(ctx);
+    public Object visitCondStmt(DomsaScriptParser.CondStmtContext ctx) {
+        return super.visitCondStmt(ctx);
     }
 
     @Override
-    public void exitJsonValue(DomsaScriptParser.JsonValueContext ctx) {
-        super.exitJsonValue(ctx);
+    public Object visitIterStmt(DomsaScriptParser.IterStmtContext ctx) {
+        return super.visitIterStmt(ctx);
     }
 
     @Override
-    public void enterJsonPair(DomsaScriptParser.JsonPairContext ctx) {
-        super.enterJsonPair(ctx);
+    public Object visitRetStmt(DomsaScriptParser.RetStmtContext ctx) {
+        return super.visitRetStmt(ctx);
     }
 
     @Override
-    public void exitJsonPair(DomsaScriptParser.JsonPairContext ctx) {
-        super.exitJsonPair(ctx);
-    }
-
-    @Override
-    public void enterJsonArr(DomsaScriptParser.JsonArrContext ctx) {
-        super.enterJsonArr(ctx);
-    }
-
-    @Override
-    public void exitJsonArr(DomsaScriptParser.JsonArrContext ctx) {
-        super.exitJsonArr(ctx);
-    }
-
-    @Override
-    public void enterJsonObj(DomsaScriptParser.JsonObjContext ctx) {
-        super.enterJsonObj(ctx);
-    }
-
-    @Override
-    public void exitJsonObj(DomsaScriptParser.JsonObjContext ctx) {
-        super.exitJsonObj(ctx);
-    }
-
-    @Override
-    public void enterAssignOper(DomsaScriptParser.AssignOperContext ctx) {
-        super.enterAssignOper(ctx);
-    }
-
-    @Override
-    public void exitAssignOper(DomsaScriptParser.AssignOperContext ctx) {
-        super.exitAssignOper(ctx);
-    }
-
-    @Override
-    public void enterAssignValue(DomsaScriptParser.AssignValueContext ctx) {
-        super.enterAssignValue(ctx);
-    }
-
-    @Override
-    public void exitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
-        super.exitAssignValue(ctx);
-    }
-
-    @Override
-    public void enterAssign(DomsaScriptParser.AssignContext ctx) {
-        super.enterAssign(ctx);
-    }
-
-    @Override
-    public void exitAssign(DomsaScriptParser.AssignContext ctx) {
-        super.exitAssign(ctx);
-    }
-
-    @Override
-    public void enterEos(DomsaScriptParser.EosContext ctx) {
-        super.enterEos(ctx);
-    }
-
-    @Override
-    public void exitEos(DomsaScriptParser.EosContext ctx) {
-        super.exitEos(ctx);
-    }
-
-    @Override
-    public void enterStmt(DomsaScriptParser.StmtContext ctx) {
-        super.enterStmt(ctx);
-    }
-
-    @Override
-    public void exitStmt(DomsaScriptParser.StmtContext ctx) {
-        super.exitStmt(ctx);
-    }
-
-    @Override
-    public void enterAssignStmt(DomsaScriptParser.AssignStmtContext ctx) {
-        super.enterAssignStmt(ctx);
-    }
-
-    @Override
-    public void exitAssignStmt(DomsaScriptParser.AssignStmtContext ctx) {
-        super.exitAssignStmt(ctx);
-    }
-
-    @Override
-    public void enterNestStmt(DomsaScriptParser.NestStmtContext ctx) {
-        super.enterNestStmt(ctx);
-    }
-
-    @Override
-    public void exitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
-        super.exitNestStmt(ctx);
-    }
-
-    @Override
-    public void enterCondStmt(DomsaScriptParser.CondStmtContext ctx) {
-        super.enterCondStmt(ctx);
-    }
-
-    @Override
-    public void exitCondStmt(DomsaScriptParser.CondStmtContext ctx) {
-        super.exitCondStmt(ctx);
-    }
-
-    @Override
-    public void enterIterStmt(DomsaScriptParser.IterStmtContext ctx) {
-        super.enterIterStmt(ctx);
-    }
-
-    @Override
-    public void exitIterStmt(DomsaScriptParser.IterStmtContext ctx) {
-        super.exitIterStmt(ctx);
-    }
-
-    @Override
-    public void enterRetStmt(DomsaScriptParser.RetStmtContext ctx) {
-        super.enterRetStmt(ctx);
-    }
-
-    @Override
-    public void exitRetStmt(DomsaScriptParser.RetStmtContext ctx) {
-        super.exitRetStmt(ctx);
-    }
-
-    @Override
-    public void enterScript(DomsaScriptParser.ScriptContext ctx) {
-        super.enterScript(ctx);
-    }
-
-    @Override
-    public void exitScript(DomsaScriptParser.ScriptContext ctx) {
-        super.exitScript(ctx);
-    }
-
-    @Override
-    public void enterEveryRule(ParserRuleContext ctx) {
-        super.enterEveryRule(ctx);
-    }
-
-    @Override
-    public void exitEveryRule(ParserRuleContext ctx) {
-        super.exitEveryRule(ctx);
-    }
-
-    @Override
-    public void visitTerminal(TerminalNode node) {
-        super.visitTerminal(node);
-    }
-
-    @Override
-    public void visitErrorNode(ErrorNode node) {
-        super.visitErrorNode(node);
+    public Object visitScript(DomsaScriptParser.ScriptContext ctx) {
+        return super.visitScript(ctx);
     }
 }

@@ -29,9 +29,9 @@ public class Main {
 
             var parser = new DomsaScriptParser(
                     new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
-            ParseTree parseTree = parser.script();
+            var scriptCtx = parser.script();
             DomsaScriptExecutor exec = new DomsaScriptExecutor();
-            new ParseTreeWalker().walk(exec, parseTree);
+            exec.visitScript(scriptCtx);
 
             ctx.status(200);
         });

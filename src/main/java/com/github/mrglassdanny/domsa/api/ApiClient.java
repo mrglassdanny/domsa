@@ -26,7 +26,7 @@ public class ApiClient {
                 .addHeader("Accept", "application/json").build();
 
         try (Response response = client.newCall(request).execute()) {
-            return new JsonParser().parse(response.body().string());
+            return new JsonParser().parseString(response.body().string());
         }
     }
 

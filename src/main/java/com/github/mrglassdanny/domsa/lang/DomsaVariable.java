@@ -2,12 +2,12 @@ package com.github.mrglassdanny.domsa.lang;
 
 public class DomsaVariable {
 
-    public String name;
-    public DomsaType type;
+    public DomsaType typ;
+    public Object data;
 
-    public DomsaVariable(String name, DomsaType type) {
-        this.name = name;
-        this.type = type;
+    public DomsaVariable(DomsaType typ, Object data) {
+        this.typ = typ;
+        this.data = data;
     }
 
 }

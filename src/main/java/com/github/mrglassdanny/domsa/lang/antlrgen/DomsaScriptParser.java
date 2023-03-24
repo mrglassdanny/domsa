@@ -28,7 +28,7 @@ public class DomsaScriptParser extends Parser {
 		DigitSequence=44, FormatString=45, String=46, Whitespace=47, Newline=48, 
 		BlockComment=49, LineComment=50;
 	public static final int
-		RULE_idExpr = 0, RULE_fnExpr = 1, RULE_arithExpr = 2, RULE_mulExpr = 3, 
+		RULE_idExpr = 0, RULE_fnExpr = 1, RULE_baseExpr = 2, RULE_mulExpr = 3, 
 		RULE_addExpr = 4, RULE_relExpr = 5, RULE_eqValue = 6, RULE_eqExpr = 7, 
 		RULE_logAndExpr = 8, RULE_logOrExpr = 9, RULE_expr = 10, RULE_jsonValue = 11, 
 		RULE_jsonPair = 12, RULE_jsonArr = 13, RULE_jsonObj = 14, RULE_assignOper = 15, 
@@ -37,7 +37,7 @@ public class DomsaScriptParser extends Parser {
 		RULE_retStmt = 24, RULE_script = 25;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"idExpr", "fnExpr", "arithExpr", "mulExpr", "addExpr", "relExpr", "eqValue", 
+			"idExpr", "fnExpr", "baseExpr", "mulExpr", "addExpr", "relExpr", "eqValue", 
 			"eqExpr", "logAndExpr", "logOrExpr", "expr", "jsonValue", "jsonPair", 
 			"jsonArr", "jsonObj", "assignOper", "assignValue", "assign", "eos", "stmt", 
 			"assignStmt", "nestStmt", "condStmt", "iterStmt", "retStmt", "script"
@@ -131,12 +131,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_idExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterIdExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitIdExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitIdExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -190,12 +187,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_fnExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterFnExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitFnExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitFnExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -235,45 +229,47 @@ public class DomsaScriptParser extends Parser {
 		return _localctx;
 	}
 
-	public static class ArithExprContext extends ParserRuleContext {
-		public TerminalNode Number() { return getToken(DomsaScriptParser.Number, 0); }
-		public FnExprContext fnExpr() {
-			return getRuleContext(FnExprContext.class,0);
-		}
+	public static class BaseExprContext extends ParserRuleContext {
 		public IdExprContext idExpr() {
 			return getRuleContext(IdExprContext.class,0);
 		}
+		public FnExprContext fnExpr() {
+			return getRuleContext(FnExprContext.class,0);
+		}
+		public TerminalNode Number() { return getToken(DomsaScriptParser.Number, 0); }
+		public TerminalNode String() { return getToken(DomsaScriptParser.String, 0); }
+		public TerminalNode FormatString() { return getToken(DomsaScriptParser.FormatString, 0); }
+		public TerminalNode True() { return getToken(DomsaScriptParser.True, 0); }
+		public TerminalNode False() { return getToken(DomsaScriptParser.False, 0); }
+		public TerminalNode Null() { return getToken(DomsaScriptParser.Null, 0); }
 		public TerminalNode LeftParen() { return getToken(DomsaScriptParser.LeftParen, 0); }
-		public AddExprContext addExpr() {
-			return getRuleContext(AddExprContext.class,0);
+		public ExprContext expr() {
+			return getRuleContext(ExprContext.class,0);
 		}
 		public TerminalNode RightParen() { return getToken(DomsaScriptParser.RightParen, 0); }
-		public ArithExprContext(ParserRuleContext parent, int invokingState) {
+		public BaseExprContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_arithExpr; }
+		@Override public int getRuleIndex() { return RULE_baseExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterArithExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitArithExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitBaseExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final ArithExprContext arithExpr() throws RecognitionException {
-		ArithExprContext _localctx = new ArithExprContext(_ctx, getState());
-		enterRule(_localctx, 4, RULE_arithExpr);
+	public final BaseExprContext baseExpr() throws RecognitionException {
+		BaseExprContext _localctx = new BaseExprContext(_ctx, getState());
+		enterRule(_localctx, 4, RULE_baseExpr);
 		try {
-			setState(74);
+			setState(79);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,2,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(67);
-				match(Number);
+				idExpr();
 				}
 				break;
 			case 2:
@@ -287,17 +283,52 @@ public class DomsaScriptParser extends Parser {
 				enterOuterAlt(_localctx, 3);
 				{
 				setState(69);
-				idExpr();
+				match(Number);
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
 				setState(70);
-				match(LeftParen);
+				match(String);
+				}
+				break;
+			case 5:
+				enterOuterAlt(_localctx, 5);
+				{
 				setState(71);
-				addExpr();
+				match(FormatString);
+				}
+				break;
+			case 6:
+				enterOuterAlt(_localctx, 6);
+				{
 				setState(72);
+				match(True);
+				}
+				break;
+			case 7:
+				enterOuterAlt(_localctx, 7);
+				{
+				setState(73);
+				match(False);
+				}
+				break;
+			case 8:
+				enterOuterAlt(_localctx, 8);
+				{
+				setState(74);
+				match(Null);
+				}
+				break;
+			case 9:
+				enterOuterAlt(_localctx, 9);
+				{
+				setState(75);
+				match(LeftParen);
+				setState(76);
+				expr();
+				setState(77);
 				match(RightParen);
 				}
 				break;
@@ -315,11 +346,11 @@ public class DomsaScriptParser extends Parser {
 	}
 
 	public static class MulExprContext extends ParserRuleContext {
-		public List<ArithExprContext> arithExpr() {
-			return getRuleContexts(ArithExprContext.class);
+		public List<BaseExprContext> baseExpr() {
+			return getRuleContexts(BaseExprContext.class);
 		}
-		public ArithExprContext arithExpr(int i) {
-			return getRuleContext(ArithExprContext.class,i);
+		public BaseExprContext baseExpr(int i) {
+			return getRuleContext(BaseExprContext.class,i);
 		}
 		public List<TerminalNode> Star() { return getTokens(DomsaScriptParser.Star); }
 		public TerminalNode Star(int i) {
@@ -338,12 +369,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_mulExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterMulExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitMulExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitMulExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -354,15 +382,15 @@ public class DomsaScriptParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(76);
-			arithExpr();
 			setState(81);
+			baseExpr();
+			setState(86);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Star) | (1L << Div) | (1L << Mod))) != 0)) {
 				{
 				{
-				setState(77);
+				setState(82);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Star) | (1L << Div) | (1L << Mod))) != 0)) ) {
 				_errHandler.recoverInline(this);
@@ -372,11 +400,11 @@ public class DomsaScriptParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(78);
-				arithExpr();
-				}
-				}
 				setState(83);
+				baseExpr();
+				}
+				}
+				setState(88);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -413,12 +441,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_addExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAddExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAddExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitAddExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -429,15 +454,15 @@ public class DomsaScriptParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(84);
-			mulExpr();
 			setState(89);
+			mulExpr();
+			setState(94);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==Plus || _la==Minus) {
 				{
 				{
-				setState(85);
+				setState(90);
 				_la = _input.LA(1);
 				if ( !(_la==Plus || _la==Minus) ) {
 				_errHandler.recoverInline(this);
@@ -447,11 +472,11 @@ public class DomsaScriptParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(86);
+				setState(91);
 				mulExpr();
 				}
 				}
-				setState(91);
+				setState(96);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -496,12 +521,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_relExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterRelExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitRelExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitRelExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -512,15 +534,15 @@ public class DomsaScriptParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(92);
-			addExpr();
 			setState(97);
+			addExpr();
+			setState(102);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Less) | (1L << LessEqual) | (1L << Greater) | (1L << GreaterEqual))) != 0)) {
 				{
 				{
-				setState(93);
+				setState(98);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Less) | (1L << LessEqual) | (1L << Greater) | (1L << GreaterEqual))) != 0)) ) {
 				_errHandler.recoverInline(this);
@@ -530,11 +552,11 @@ public class DomsaScriptParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(94);
+				setState(99);
 				addExpr();
 				}
 				}
-				setState(99);
+				setState(104);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -565,12 +587,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_eqValue; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterEqValue(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitEqValue(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitEqValue(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -580,49 +599,45 @@ public class DomsaScriptParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(106);
+			setState(111);
 			_errHandler.sync(this);
-			switch (_input.LA(1)) {
-			case LeftParen:
-			case Id:
-			case Number:
+			switch ( getInterpreter().adaptivePredict(_input,6,_ctx) ) {
+			case 1:
 				{
-				setState(100);
+				setState(105);
 				relExpr();
 				}
 				break;
-			case String:
+			case 2:
 				{
-				setState(101);
+				setState(106);
 				match(String);
 				}
 				break;
-			case FormatString:
+			case 3:
 				{
-				setState(102);
+				setState(107);
 				match(FormatString);
 				}
 				break;
-			case True:
+			case 4:
 				{
-				setState(103);
+				setState(108);
 				match(True);
 				}
 				break;
-			case False:
+			case 5:
 				{
-				setState(104);
+				setState(109);
 				match(False);
 				}
 				break;
-			case Null:
+			case 6:
 				{
-				setState(105);
+				setState(110);
 				match(Null);
 				}
 				break;
-			default:
-				throw new NoViableAltException(this);
 			}
 			}
 		}
@@ -657,12 +672,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_eqExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterEqExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitEqExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitEqExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -673,15 +685,15 @@ public class DomsaScriptParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(108);
-			eqValue();
 			setState(113);
+			eqValue();
+			setState(118);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==Equal || _la==NotEqual) {
 				{
 				{
-				setState(109);
+				setState(114);
 				_la = _input.LA(1);
 				if ( !(_la==Equal || _la==NotEqual) ) {
 				_errHandler.recoverInline(this);
@@ -691,11 +703,11 @@ public class DomsaScriptParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(110);
+				setState(115);
 				eqValue();
 				}
 				}
-				setState(115);
+				setState(120);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -728,12 +740,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_logAndExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterLogAndExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitLogAndExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitLogAndExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -744,21 +753,21 @@ public class DomsaScriptParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(116);
-			eqExpr();
 			setState(121);
+			eqExpr();
+			setState(126);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==And) {
 				{
 				{
-				setState(117);
+				setState(122);
 				match(And);
-				setState(118);
+				setState(123);
 				eqExpr();
 				}
 				}
-				setState(123);
+				setState(128);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -791,12 +800,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_logOrExpr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterLogOrExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitLogOrExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitLogOrExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -807,21 +813,21 @@ public class DomsaScriptParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(124);
-			logAndExpr();
 			setState(129);
+			logAndExpr();
+			setState(134);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==Or) {
 				{
 				{
-				setState(125);
+				setState(130);
 				match(Or);
-				setState(126);
+				setState(131);
 				logAndExpr();
 				}
 				}
-				setState(131);
+				setState(136);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -842,22 +848,14 @@ public class DomsaScriptParser extends Parser {
 		public LogOrExprContext logOrExpr() {
 			return getRuleContext(LogOrExprContext.class,0);
 		}
-		public TerminalNode LeftParen() { return getToken(DomsaScriptParser.LeftParen, 0); }
-		public ExprContext expr() {
-			return getRuleContext(ExprContext.class,0);
-		}
-		public TerminalNode RightParen() { return getToken(DomsaScriptParser.RightParen, 0); }
 		public ExprContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_expr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitExpr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -865,27 +863,10 @@ public class DomsaScriptParser extends Parser {
 		ExprContext _localctx = new ExprContext(_ctx, getState());
 		enterRule(_localctx, 20, RULE_expr);
 		try {
+			enterOuterAlt(_localctx, 1);
+			{
 			setState(137);
-			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,10,_ctx) ) {
-			case 1:
-				enterOuterAlt(_localctx, 1);
-				{
-				setState(132);
-				logOrExpr();
-				}
-				break;
-			case 2:
-				enterOuterAlt(_localctx, 2);
-				{
-				setState(133);
-				match(LeftParen);
-				setState(134);
-				expr();
-				setState(135);
-				match(RightParen);
-				}
-				break;
+			logOrExpr();
 			}
 		}
 		catch (RecognitionException re) {
@@ -914,12 +895,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_jsonValue; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonValue(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonValue(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitJsonValue(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -984,12 +962,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_jsonPair; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonPair(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonPair(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitJsonPair(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1042,12 +1017,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_jsonArr; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonArr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonArr(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitJsonArr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1058,7 +1030,7 @@ public class DomsaScriptParser extends Parser {
 		try {
 			setState(170);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,16,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,15,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
@@ -1162,12 +1134,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_jsonObj; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterJsonObj(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitJsonObj(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitJsonObj(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1178,7 +1147,7 @@ public class DomsaScriptParser extends Parser {
 		try {
 			setState(197);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,22,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,21,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
@@ -1275,12 +1244,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_assignOper; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssignOper(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssignOper(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitAssignOper(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1320,12 +1286,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_assignValue; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssignValue(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssignValue(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitAssignValue(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1404,12 +1367,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_assign; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssign(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssign(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitAssign(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1448,12 +1408,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_eos; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterEos(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitEos(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitEos(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1482,7 +1439,7 @@ public class DomsaScriptParser extends Parser {
 				}
 				setState(215); 
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,25,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,24,_ctx);
 			} while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
 			}
 		}
@@ -1524,12 +1481,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_stmt; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterStmt(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitStmt(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitStmt(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1541,7 +1495,7 @@ public class DomsaScriptParser extends Parser {
 			{
 			setState(218);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,26,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,25,_ctx) ) {
 			case 1:
 				{
 				setState(217);
@@ -1595,7 +1549,7 @@ public class DomsaScriptParser extends Parser {
 			}
 			setState(229);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,28,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,27,_ctx) ) {
 			case 1:
 				{
 				setState(228);
@@ -1625,12 +1579,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_assignStmt; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterAssignStmt(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitAssignStmt(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitAssignStmt(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1666,12 +1617,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_nestStmt; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterNestStmt(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitNestStmt(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitNestStmt(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1735,12 +1683,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_condStmt; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterCondStmt(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitCondStmt(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitCondStmt(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1759,7 +1704,7 @@ public class DomsaScriptParser extends Parser {
 			nestStmt();
 			setState(247);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,30,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,29,_ctx) ) {
 			case 1:
 				{
 				setState(242);
@@ -1818,12 +1763,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_iterStmt; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterIterStmt(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitIterStmt(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitIterStmt(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1894,12 +1836,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_retStmt; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterRetStmt(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitRetStmt(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitRetStmt(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1939,12 +1878,9 @@ public class DomsaScriptParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_script; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).enterScript(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DomsaScriptListener ) ((DomsaScriptListener)listener).exitScript(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DomsaScriptVisitor ) return ((DomsaScriptVisitor<? extends T>)visitor).visitScript(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -1990,97 +1926,98 @@ public class DomsaScriptParser extends Parser {
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
 		"\4\32\t\32\4\33\t\33\3\2\3\2\3\2\7\2:\n\2\f\2\16\2=\13\2\3\3\3\3\3\3\5"+
-		"\3B\n\3\3\3\3\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4M\n\4\3\5\3\5\3\5\7\5R"+
-		"\n\5\f\5\16\5U\13\5\3\6\3\6\3\6\7\6Z\n\6\f\6\16\6]\13\6\3\7\3\7\3\7\7"+
-		"\7b\n\7\f\7\16\7e\13\7\3\b\3\b\3\b\3\b\3\b\3\b\5\bm\n\b\3\t\3\t\3\t\7"+
-		"\tr\n\t\f\t\16\tu\13\t\3\n\3\n\3\n\7\nz\n\n\f\n\16\n}\13\n\3\13\3\13\3"+
-		"\13\7\13\u0082\n\13\f\13\16\13\u0085\13\13\3\f\3\f\3\f\3\f\3\f\5\f\u008c"+
-		"\n\f\3\r\3\r\3\r\5\r\u0091\n\r\3\16\3\16\3\16\3\16\3\17\3\17\5\17\u0099"+
-		"\n\17\3\17\3\17\3\17\5\17\u009e\n\17\3\17\7\17\u00a1\n\17\f\17\16\17\u00a4"+
-		"\13\17\3\17\5\17\u00a7\n\17\3\17\3\17\3\17\3\17\5\17\u00ad\n\17\3\20\3"+
-		"\20\5\20\u00b1\n\20\3\20\3\20\3\20\5\20\u00b6\n\20\3\20\7\20\u00b9\n\20"+
-		"\f\20\16\20\u00bc\13\20\3\20\5\20\u00bf\n\20\3\20\3\20\3\20\3\20\5\20"+
-		"\u00c5\n\20\3\20\5\20\u00c8\n\20\3\21\3\21\3\22\3\22\3\22\5\22\u00cf\n"+
-		"\22\5\22\u00d1\n\22\3\23\3\23\3\23\3\23\3\24\6\24\u00d8\n\24\r\24\16\24"+
-		"\u00d9\3\25\5\25\u00dd\n\25\3\25\3\25\3\25\3\25\3\25\3\25\5\25\u00e5\n"+
-		"\25\3\25\5\25\u00e8\n\25\3\26\3\26\3\27\3\27\5\27\u00ee\n\27\3\27\3\27"+
-		"\3\30\3\30\3\30\3\30\3\30\3\30\3\30\3\30\5\30\u00fa\n\30\3\30\3\30\5\30"+
-		"\u00fe\n\30\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\5\31"+
-		"\u010b\n\31\3\32\3\32\3\32\3\33\7\33\u0111\n\33\f\33\16\33\u0114\13\33"+
-		"\3\33\3\33\3\33\2\2\34\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,"+
-		".\60\62\64\2\6\3\2\37!\4\2\33\33\35\35\3\2\27\32\3\2)*\2\u012b\2\66\3"+
-		"\2\2\2\4>\3\2\2\2\6L\3\2\2\2\bN\3\2\2\2\nV\3\2\2\2\f^\3\2\2\2\16l\3\2"+
-		"\2\2\20n\3\2\2\2\22v\3\2\2\2\24~\3\2\2\2\26\u008b\3\2\2\2\30\u0090\3\2"+
-		"\2\2\32\u0092\3\2\2\2\34\u00ac\3\2\2\2\36\u00c7\3\2\2\2 \u00c9\3\2\2\2"+
-		"\"\u00d0\3\2\2\2$\u00d2\3\2\2\2&\u00d7\3\2\2\2(\u00dc\3\2\2\2*\u00e9\3"+
-		"\2\2\2,\u00eb\3\2\2\2.\u00f1\3\2\2\2\60\u010a\3\2\2\2\62\u010c\3\2\2\2"+
-		"\64\u0112\3\2\2\2\66;\7,\2\2\678\7+\2\28:\7,\2\29\67\3\2\2\2:=\3\2\2\2"+
-		";9\3\2\2\2;<\3\2\2\2<\3\3\2\2\2=;\3\2\2\2>?\7,\2\2?A\7\21\2\2@B\5\26\f"+
-		"\2A@\3\2\2\2AB\3\2\2\2BC\3\2\2\2CD\7\22\2\2D\5\3\2\2\2EM\7-\2\2FM\5\4"+
-		"\3\2GM\5\2\2\2HI\7\21\2\2IJ\5\n\6\2JK\7\22\2\2KM\3\2\2\2LE\3\2\2\2LF\3"+
-		"\2\2\2LG\3\2\2\2LH\3\2\2\2M\7\3\2\2\2NS\5\6\4\2OP\t\2\2\2PR\5\6\4\2QO"+
-		"\3\2\2\2RU\3\2\2\2SQ\3\2\2\2ST\3\2\2\2T\t\3\2\2\2US\3\2\2\2V[\5\b\5\2"+
-		"WX\t\3\2\2XZ\5\b\5\2YW\3\2\2\2Z]\3\2\2\2[Y\3\2\2\2[\\\3\2\2\2\\\13\3\2"+
-		"\2\2][\3\2\2\2^c\5\n\6\2_`\t\4\2\2`b\5\n\6\2a_\3\2\2\2be\3\2\2\2ca\3\2"+
-		"\2\2cd\3\2\2\2d\r\3\2\2\2ec\3\2\2\2fm\5\f\7\2gm\7\60\2\2hm\7/\2\2im\7"+
-		"\17\2\2jm\7\7\2\2km\7\f\2\2lf\3\2\2\2lg\3\2\2\2lh\3\2\2\2li\3\2\2\2lj"+
-		"\3\2\2\2lk\3\2\2\2m\17\3\2\2\2ns\5\16\b\2op\t\5\2\2pr\5\16\b\2qo\3\2\2"+
-		"\2ru\3\2\2\2sq\3\2\2\2st\3\2\2\2t\21\3\2\2\2us\3\2\2\2v{\5\20\t\2wx\7"+
-		"\"\2\2xz\5\20\t\2yw\3\2\2\2z}\3\2\2\2{y\3\2\2\2{|\3\2\2\2|\23\3\2\2\2"+
-		"}{\3\2\2\2~\u0083\5\22\n\2\177\u0080\7#\2\2\u0080\u0082\5\22\n\2\u0081"+
-		"\177\3\2\2\2\u0082\u0085\3\2\2\2\u0083\u0081\3\2\2\2\u0083\u0084\3\2\2"+
-		"\2\u0084\25\3\2\2\2\u0085\u0083\3\2\2\2\u0086\u008c\5\24\13\2\u0087\u0088"+
-		"\7\21\2\2\u0088\u0089\5\26\f\2\u0089\u008a\7\22\2\2\u008a\u008c\3\2\2"+
-		"\2\u008b\u0086\3\2\2\2\u008b\u0087\3\2\2\2\u008c\27\3\2\2\2\u008d\u0091"+
-		"\5\26\f\2\u008e\u0091\5\36\20\2\u008f\u0091\5\34\17\2\u0090\u008d\3\2"+
-		"\2\2\u0090\u008e\3\2\2\2\u0090\u008f\3\2\2\2\u0091\31\3\2\2\2\u0092\u0093"+
-		"\7,\2\2\u0093\u0094\7&\2\2\u0094\u0095\5\30\r\2\u0095\33\3\2\2\2\u0096"+
-		"\u0098\7\23\2\2\u0097\u0099\5&\24\2\u0098\u0097\3\2\2\2\u0098\u0099\3"+
-		"\2\2\2\u0099\u009a\3\2\2\2\u009a\u00a2\5\30\r\2\u009b\u009d\7\'\2\2\u009c"+
-		"\u009e\5&\24\2\u009d\u009c\3\2\2\2\u009d\u009e\3\2\2\2\u009e\u009f\3\2"+
-		"\2\2\u009f\u00a1\5\30\r\2\u00a0\u009b\3\2\2\2\u00a1\u00a4\3\2\2\2\u00a2"+
-		"\u00a0\3\2\2\2\u00a2\u00a3\3\2\2\2\u00a3\u00a6\3\2\2\2\u00a4\u00a2\3\2"+
-		"\2\2\u00a5\u00a7\5&\24\2\u00a6\u00a5\3\2\2\2\u00a6\u00a7\3\2\2\2\u00a7"+
-		"\u00a8\3\2\2\2\u00a8\u00a9\7\24\2\2\u00a9\u00ad\3\2\2\2\u00aa\u00ab\7"+
-		"\23\2\2\u00ab\u00ad\7\24\2\2\u00ac\u0096\3\2\2\2\u00ac\u00aa\3\2\2\2\u00ad"+
-		"\35\3\2\2\2\u00ae\u00b0\7\25\2\2\u00af\u00b1\5&\24\2\u00b0\u00af\3\2\2"+
-		"\2\u00b0\u00b1\3\2\2\2\u00b1\u00b2\3\2\2\2\u00b2\u00ba\5\32\16\2\u00b3"+
-		"\u00b5\7\'\2\2\u00b4\u00b6\5&\24\2\u00b5\u00b4\3\2\2\2\u00b5\u00b6\3\2"+
-		"\2\2\u00b6\u00b7\3\2\2\2\u00b7\u00b9\5\32\16\2\u00b8\u00b3\3\2\2\2\u00b9"+
-		"\u00bc\3\2\2\2\u00ba\u00b8\3\2\2\2\u00ba\u00bb\3\2\2\2\u00bb\u00be\3\2"+
-		"\2\2\u00bc\u00ba\3\2\2\2\u00bd\u00bf\5&\24\2\u00be\u00bd\3\2\2\2\u00be"+
-		"\u00bf\3\2\2\2\u00bf\u00c0\3\2\2\2\u00c0\u00c1\7\26\2\2\u00c1\u00c8\3"+
-		"\2\2\2\u00c2\u00c4\7\25\2\2\u00c3\u00c5\5&\24\2\u00c4\u00c3\3\2\2\2\u00c4"+
-		"\u00c5\3\2\2\2\u00c5\u00c6\3\2\2\2\u00c6\u00c8\7\26\2\2\u00c7\u00ae\3"+
-		"\2\2\2\u00c7\u00c2\3\2\2\2\u00c8\37\3\2\2\2\u00c9\u00ca\7(\2\2\u00ca!"+
-		"\3\2\2\2\u00cb\u00d1\5\26\f\2\u00cc\u00cf\5\36\20\2\u00cd\u00cf\5\34\17"+
-		"\2\u00ce\u00cc\3\2\2\2\u00ce\u00cd\3\2\2\2\u00cf\u00d1\3\2\2\2\u00d0\u00cb"+
-		"\3\2\2\2\u00d0\u00ce\3\2\2\2\u00d1#\3\2\2\2\u00d2\u00d3\5\2\2\2\u00d3"+
-		"\u00d4\5 \21\2\u00d4\u00d5\5\"\22\2\u00d5%\3\2\2\2\u00d6\u00d8\7\62\2"+
-		"\2\u00d7\u00d6\3\2\2\2\u00d8\u00d9\3\2\2\2\u00d9\u00d7\3\2\2\2\u00d9\u00da"+
-		"\3\2\2\2\u00da\'\3\2\2\2\u00db\u00dd\5&\24\2\u00dc\u00db\3\2\2\2\u00dc"+
-		"\u00dd\3\2\2\2\u00dd\u00e4\3\2\2\2\u00de\u00e5\5,\27\2\u00df\u00e5\5*"+
-		"\26\2\u00e0\u00e5\5.\30\2\u00e1\u00e5\5\60\31\2\u00e2\u00e5\5\62\32\2"+
-		"\u00e3\u00e5\5&\24\2\u00e4\u00de\3\2\2\2\u00e4\u00df\3\2\2\2\u00e4\u00e0"+
-		"\3\2\2\2\u00e4\u00e1\3\2\2\2\u00e4\u00e2\3\2\2\2\u00e4\u00e3\3\2\2\2\u00e5"+
-		"\u00e7\3\2\2\2\u00e6\u00e8\5&\24\2\u00e7\u00e6\3\2\2\2\u00e7\u00e8\3\2"+
-		"\2\2\u00e8)\3\2\2\2\u00e9\u00ea\5$\23\2\u00ea+\3\2\2\2\u00eb\u00ed\7\25"+
-		"\2\2\u00ec\u00ee\5(\25\2\u00ed\u00ec\3\2\2\2\u00ed\u00ee\3\2\2\2\u00ee"+
-		"\u00ef\3\2\2\2\u00ef\u00f0\7\26\2\2\u00f0-\3\2\2\2\u00f1\u00f2\7\t\2\2"+
-		"\u00f2\u00f3\5\26\f\2\u00f3\u00f9\5,\27\2\u00f4\u00f5\7\6\2\2\u00f5\u00f6"+
-		"\7\t\2\2\u00f6\u00f7\5\26\f\2\u00f7\u00f8\5,\27\2\u00f8\u00fa\3\2\2\2"+
-		"\u00f9\u00f4\3\2\2\2\u00f9\u00fa\3\2\2\2\u00fa\u00fd\3\2\2\2\u00fb\u00fc"+
-		"\7\6\2\2\u00fc\u00fe\5,\27\2\u00fd\u00fb\3\2\2\2\u00fd\u00fe\3\2\2\2\u00fe"+
-		"/\3\2\2\2\u00ff\u0100\7\13\2\2\u0100\u010b\5,\27\2\u0101\u0102\7\20\2"+
-		"\2\u0102\u0103\5\26\f\2\u0103\u0104\5,\27\2\u0104\u010b\3\2\2\2\u0105"+
-		"\u0106\7\b\2\2\u0106\u0107\7,\2\2\u0107\u0108\7\n\2\2\u0108\u0109\7,\2"+
-		"\2\u0109\u010b\5,\27\2\u010a\u00ff\3\2\2\2\u010a\u0101\3\2\2\2\u010a\u0105"+
-		"\3\2\2\2\u010b\61\3\2\2\2\u010c\u010d\7\r\2\2\u010d\u010e\5\26\f\2\u010e"+
-		"\63\3\2\2\2\u010f\u0111\5(\25\2\u0110\u010f\3\2\2\2\u0111\u0114\3\2\2"+
-		"\2\u0112\u0110\3\2\2\2\u0112\u0113\3\2\2\2\u0113\u0115\3\2\2\2\u0114\u0112"+
-		"\3\2\2\2\u0115\u0116\7\2\2\3\u0116\65\3\2\2\2$;ALS[cls{\u0083\u008b\u0090"+
-		"\u0098\u009d\u00a2\u00a6\u00ac\u00b0\u00b5\u00ba\u00be\u00c4\u00c7\u00ce"+
-		"\u00d0\u00d9\u00dc\u00e4\u00e7\u00ed\u00f9\u00fd\u010a\u0112";
+		"\3B\n\3\3\3\3\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4R\n"+
+		"\4\3\5\3\5\3\5\7\5W\n\5\f\5\16\5Z\13\5\3\6\3\6\3\6\7\6_\n\6\f\6\16\6b"+
+		"\13\6\3\7\3\7\3\7\7\7g\n\7\f\7\16\7j\13\7\3\b\3\b\3\b\3\b\3\b\3\b\5\b"+
+		"r\n\b\3\t\3\t\3\t\7\tw\n\t\f\t\16\tz\13\t\3\n\3\n\3\n\7\n\177\n\n\f\n"+
+		"\16\n\u0082\13\n\3\13\3\13\3\13\7\13\u0087\n\13\f\13\16\13\u008a\13\13"+
+		"\3\f\3\f\3\r\3\r\3\r\5\r\u0091\n\r\3\16\3\16\3\16\3\16\3\17\3\17\5\17"+
+		"\u0099\n\17\3\17\3\17\3\17\5\17\u009e\n\17\3\17\7\17\u00a1\n\17\f\17\16"+
+		"\17\u00a4\13\17\3\17\5\17\u00a7\n\17\3\17\3\17\3\17\3\17\5\17\u00ad\n"+
+		"\17\3\20\3\20\5\20\u00b1\n\20\3\20\3\20\3\20\5\20\u00b6\n\20\3\20\7\20"+
+		"\u00b9\n\20\f\20\16\20\u00bc\13\20\3\20\5\20\u00bf\n\20\3\20\3\20\3\20"+
+		"\3\20\5\20\u00c5\n\20\3\20\5\20\u00c8\n\20\3\21\3\21\3\22\3\22\3\22\5"+
+		"\22\u00cf\n\22\5\22\u00d1\n\22\3\23\3\23\3\23\3\23\3\24\6\24\u00d8\n\24"+
+		"\r\24\16\24\u00d9\3\25\5\25\u00dd\n\25\3\25\3\25\3\25\3\25\3\25\3\25\5"+
+		"\25\u00e5\n\25\3\25\5\25\u00e8\n\25\3\26\3\26\3\27\3\27\5\27\u00ee\n\27"+
+		"\3\27\3\27\3\30\3\30\3\30\3\30\3\30\3\30\3\30\3\30\5\30\u00fa\n\30\3\30"+
+		"\3\30\5\30\u00fe\n\30\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31"+
+		"\3\31\5\31\u010b\n\31\3\32\3\32\3\32\3\33\7\33\u0111\n\33\f\33\16\33\u0114"+
+		"\13\33\3\33\3\33\3\33\2\2\34\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \""+
+		"$&(*,.\60\62\64\2\6\3\2\37!\4\2\33\33\35\35\3\2\27\32\3\2)*\2\u012f\2"+
+		"\66\3\2\2\2\4>\3\2\2\2\6Q\3\2\2\2\bS\3\2\2\2\n[\3\2\2\2\fc\3\2\2\2\16"+
+		"q\3\2\2\2\20s\3\2\2\2\22{\3\2\2\2\24\u0083\3\2\2\2\26\u008b\3\2\2\2\30"+
+		"\u0090\3\2\2\2\32\u0092\3\2\2\2\34\u00ac\3\2\2\2\36\u00c7\3\2\2\2 \u00c9"+
+		"\3\2\2\2\"\u00d0\3\2\2\2$\u00d2\3\2\2\2&\u00d7\3\2\2\2(\u00dc\3\2\2\2"+
+		"*\u00e9\3\2\2\2,\u00eb\3\2\2\2.\u00f1\3\2\2\2\60\u010a\3\2\2\2\62\u010c"+
+		"\3\2\2\2\64\u0112\3\2\2\2\66;\7,\2\2\678\7+\2\28:\7,\2\29\67\3\2\2\2:"+
+		"=\3\2\2\2;9\3\2\2\2;<\3\2\2\2<\3\3\2\2\2=;\3\2\2\2>?\7,\2\2?A\7\21\2\2"+
+		"@B\5\26\f\2A@\3\2\2\2AB\3\2\2\2BC\3\2\2\2CD\7\22\2\2D\5\3\2\2\2ER\5\2"+
+		"\2\2FR\5\4\3\2GR\7-\2\2HR\7\60\2\2IR\7/\2\2JR\7\17\2\2KR\7\7\2\2LR\7\f"+
+		"\2\2MN\7\21\2\2NO\5\26\f\2OP\7\22\2\2PR\3\2\2\2QE\3\2\2\2QF\3\2\2\2QG"+
+		"\3\2\2\2QH\3\2\2\2QI\3\2\2\2QJ\3\2\2\2QK\3\2\2\2QL\3\2\2\2QM\3\2\2\2R"+
+		"\7\3\2\2\2SX\5\6\4\2TU\t\2\2\2UW\5\6\4\2VT\3\2\2\2WZ\3\2\2\2XV\3\2\2\2"+
+		"XY\3\2\2\2Y\t\3\2\2\2ZX\3\2\2\2[`\5\b\5\2\\]\t\3\2\2]_\5\b\5\2^\\\3\2"+
+		"\2\2_b\3\2\2\2`^\3\2\2\2`a\3\2\2\2a\13\3\2\2\2b`\3\2\2\2ch\5\n\6\2de\t"+
+		"\4\2\2eg\5\n\6\2fd\3\2\2\2gj\3\2\2\2hf\3\2\2\2hi\3\2\2\2i\r\3\2\2\2jh"+
+		"\3\2\2\2kr\5\f\7\2lr\7\60\2\2mr\7/\2\2nr\7\17\2\2or\7\7\2\2pr\7\f\2\2"+
+		"qk\3\2\2\2ql\3\2\2\2qm\3\2\2\2qn\3\2\2\2qo\3\2\2\2qp\3\2\2\2r\17\3\2\2"+
+		"\2sx\5\16\b\2tu\t\5\2\2uw\5\16\b\2vt\3\2\2\2wz\3\2\2\2xv\3\2\2\2xy\3\2"+
+		"\2\2y\21\3\2\2\2zx\3\2\2\2{\u0080\5\20\t\2|}\7\"\2\2}\177\5\20\t\2~|\3"+
+		"\2\2\2\177\u0082\3\2\2\2\u0080~\3\2\2\2\u0080\u0081\3\2\2\2\u0081\23\3"+
+		"\2\2\2\u0082\u0080\3\2\2\2\u0083\u0088\5\22\n\2\u0084\u0085\7#\2\2\u0085"+
+		"\u0087\5\22\n\2\u0086\u0084\3\2\2\2\u0087\u008a\3\2\2\2\u0088\u0086\3"+
+		"\2\2\2\u0088\u0089\3\2\2\2\u0089\25\3\2\2\2\u008a\u0088\3\2\2\2\u008b"+
+		"\u008c\5\24\13\2\u008c\27\3\2\2\2\u008d\u0091\5\26\f\2\u008e\u0091\5\36"+
+		"\20\2\u008f\u0091\5\34\17\2\u0090\u008d\3\2\2\2\u0090\u008e\3\2\2\2\u0090"+
+		"\u008f\3\2\2\2\u0091\31\3\2\2\2\u0092\u0093\7,\2\2\u0093\u0094\7&\2\2"+
+		"\u0094\u0095\5\30\r\2\u0095\33\3\2\2\2\u0096\u0098\7\23\2\2\u0097\u0099"+
+		"\5&\24\2\u0098\u0097\3\2\2\2\u0098\u0099\3\2\2\2\u0099\u009a\3\2\2\2\u009a"+
+		"\u00a2\5\30\r\2\u009b\u009d\7\'\2\2\u009c\u009e\5&\24\2\u009d\u009c\3"+
+		"\2\2\2\u009d\u009e\3\2\2\2\u009e\u009f\3\2\2\2\u009f\u00a1\5\30\r\2\u00a0"+
+		"\u009b\3\2\2\2\u00a1\u00a4\3\2\2\2\u00a2\u00a0\3\2\2\2\u00a2\u00a3\3\2"+
+		"\2\2\u00a3\u00a6\3\2\2\2\u00a4\u00a2\3\2\2\2\u00a5\u00a7\5&\24\2\u00a6"+
+		"\u00a5\3\2\2\2\u00a6\u00a7\3\2\2\2\u00a7\u00a8\3\2\2\2\u00a8\u00a9\7\24"+
+		"\2\2\u00a9\u00ad\3\2\2\2\u00aa\u00ab\7\23\2\2\u00ab\u00ad\7\24\2\2\u00ac"+
+		"\u0096\3\2\2\2\u00ac\u00aa\3\2\2\2\u00ad\35\3\2\2\2\u00ae\u00b0\7\25\2"+
+		"\2\u00af\u00b1\5&\24\2\u00b0\u00af\3\2\2\2\u00b0\u00b1\3\2\2\2\u00b1\u00b2"+
+		"\3\2\2\2\u00b2\u00ba\5\32\16\2\u00b3\u00b5\7\'\2\2\u00b4\u00b6\5&\24\2"+
+		"\u00b5\u00b4\3\2\2\2\u00b5\u00b6\3\2\2\2\u00b6\u00b7\3\2\2\2\u00b7\u00b9"+
+		"\5\32\16\2\u00b8\u00b3\3\2\2\2\u00b9\u00bc\3\2\2\2\u00ba\u00b8\3\2\2\2"+
+		"\u00ba\u00bb\3\2\2\2\u00bb\u00be\3\2\2\2\u00bc\u00ba\3\2\2\2\u00bd\u00bf"+
+		"\5&\24\2\u00be\u00bd\3\2\2\2\u00be\u00bf\3\2\2\2\u00bf\u00c0\3\2\2\2\u00c0"+
+		"\u00c1\7\26\2\2\u00c1\u00c8\3\2\2\2\u00c2\u00c4\7\25\2\2\u00c3\u00c5\5"+
+		"&\24\2\u00c4\u00c3\3\2\2\2\u00c4\u00c5\3\2\2\2\u00c5\u00c6\3\2\2\2\u00c6"+
+		"\u00c8\7\26\2\2\u00c7\u00ae\3\2\2\2\u00c7\u00c2\3\2\2\2\u00c8\37\3\2\2"+
+		"\2\u00c9\u00ca\7(\2\2\u00ca!\3\2\2\2\u00cb\u00d1\5\26\f\2\u00cc\u00cf"+
+		"\5\36\20\2\u00cd\u00cf\5\34\17\2\u00ce\u00cc\3\2\2\2\u00ce\u00cd\3\2\2"+
+		"\2\u00cf\u00d1\3\2\2\2\u00d0\u00cb\3\2\2\2\u00d0\u00ce\3\2\2\2\u00d1#"+
+		"\3\2\2\2\u00d2\u00d3\5\2\2\2\u00d3\u00d4\5 \21\2\u00d4\u00d5\5\"\22\2"+
+		"\u00d5%\3\2\2\2\u00d6\u00d8\7\62\2\2\u00d7\u00d6\3\2\2\2\u00d8\u00d9\3"+
+		"\2\2\2\u00d9\u00d7\3\2\2\2\u00d9\u00da\3\2\2\2\u00da\'\3\2\2\2\u00db\u00dd"+
+		"\5&\24\2\u00dc\u00db\3\2\2\2\u00dc\u00dd\3\2\2\2\u00dd\u00e4\3\2\2\2\u00de"+
+		"\u00e5\5,\27\2\u00df\u00e5\5*\26\2\u00e0\u00e5\5.\30\2\u00e1\u00e5\5\60"+
+		"\31\2\u00e2\u00e5\5\62\32\2\u00e3\u00e5\5&\24\2\u00e4\u00de\3\2\2\2\u00e4"+
+		"\u00df\3\2\2\2\u00e4\u00e0\3\2\2\2\u00e4\u00e1\3\2\2\2\u00e4\u00e2\3\2"+
+		"\2\2\u00e4\u00e3\3\2\2\2\u00e5\u00e7\3\2\2\2\u00e6\u00e8\5&\24\2\u00e7"+
+		"\u00e6\3\2\2\2\u00e7\u00e8\3\2\2\2\u00e8)\3\2\2\2\u00e9\u00ea\5$\23\2"+
+		"\u00ea+\3\2\2\2\u00eb\u00ed\7\25\2\2\u00ec\u00ee\5(\25\2\u00ed\u00ec\3"+
+		"\2\2\2\u00ed\u00ee\3\2\2\2\u00ee\u00ef\3\2\2\2\u00ef\u00f0\7\26\2\2\u00f0"+
+		"-\3\2\2\2\u00f1\u00f2\7\t\2\2\u00f2\u00f3\5\26\f\2\u00f3\u00f9\5,\27\2"+
+		"\u00f4\u00f5\7\6\2\2\u00f5\u00f6\7\t\2\2\u00f6\u00f7\5\26\f\2\u00f7\u00f8"+
+		"\5,\27\2\u00f8\u00fa\3\2\2\2\u00f9\u00f4\3\2\2\2\u00f9\u00fa\3\2\2\2\u00fa"+
+		"\u00fd\3\2\2\2\u00fb\u00fc\7\6\2\2\u00fc\u00fe\5,\27\2\u00fd\u00fb\3\2"+
+		"\2\2\u00fd\u00fe\3\2\2\2\u00fe/\3\2\2\2\u00ff\u0100\7\13\2\2\u0100\u010b"+
+		"\5,\27\2\u0101\u0102\7\20\2\2\u0102\u0103\5\26\f\2\u0103\u0104\5,\27\2"+
+		"\u0104\u010b\3\2\2\2\u0105\u0106\7\b\2\2\u0106\u0107\7,\2\2\u0107\u0108"+
+		"\7\n\2\2\u0108\u0109\7,\2\2\u0109\u010b\5,\27\2\u010a\u00ff\3\2\2\2\u010a"+
+		"\u0101\3\2\2\2\u010a\u0105\3\2\2\2\u010b\61\3\2\2\2\u010c\u010d\7\r\2"+
+		"\2\u010d\u010e\5\26\f\2\u010e\63\3\2\2\2\u010f\u0111\5(\25\2\u0110\u010f"+
+		"\3\2\2\2\u0111\u0114\3\2\2\2\u0112\u0110\3\2\2\2\u0112\u0113\3\2\2\2\u0113"+
+		"\u0115\3\2\2\2\u0114\u0112\3\2\2\2\u0115\u0116\7\2\2\3\u0116\65\3\2\2"+
+		"\2#;AQX`hqx\u0080\u0088\u0090\u0098\u009d\u00a2\u00a6\u00ac\u00b0\u00b5"+
+		"\u00ba\u00be\u00c4\u00c7\u00ce\u00d0\u00d9\u00dc\u00e4\u00e7\u00ed\u00f9"+
+		"\u00fd\u010a\u0112";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

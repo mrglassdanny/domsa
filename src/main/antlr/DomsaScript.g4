@@ -13,8 +13,19 @@ idExpr
 
 fnExpr: Id LeftParen expr? RightParen;
 
-arithExpr: Number | fnExpr | idExpr | LeftParen addExpr RightParen;
-mulExpr: arithExpr ((Star | Div | Mod) arithExpr)*;
+baseExpr
+    : idExpr
+    | fnExpr
+    | Number
+    | String
+    | FormatString
+    | True
+    | False
+    | Null
+    | LeftParen expr RightParen
+    ;
+
+mulExpr: baseExpr ((Star | Div | Mod) baseExpr)*;
 addExpr: mulExpr ((Plus | Minus) mulExpr)*;
 
 relExpr: addExpr ((Less | Greater | LessEqual | GreaterEqual) addExpr)*;
@@ -25,8 +36,7 @@ logAndExpr: eqExpr (And eqExpr)*;
 logOrExpr: logAndExpr (Or logAndExpr)*;
 
 expr
-    : logOrExpr
-    | LeftParen expr RightParen;
+    : logOrExpr;
 
 // JSON ------------------------------------------------------------------------------------
 
