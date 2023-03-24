@@ -63,22 +63,24 @@ jsonValue
 
 // FLOW ------------------------------------------------------------------------------------
 
-eos: Newline+ | EOF;
+eos: Newline+;
 
 stmt
-    :   eos?
+    : eos?
     (   nestStmt
     |   assignStmt
     |   condStmt
     |   iterStmt
-    |   retStmt)
+    |   retStmt
+    |   eos)
+      eos?
     ;
 
 assignStmt
-    :   assign? eos;
+    :   assign;
 
 nestStmt
-    :   LeftBrace eos? stmt? eos? RightBrace
+    :   LeftBrace stmt? RightBrace
     ;
 
 condStmt
@@ -95,7 +97,7 @@ retStmt
     : Return expr;
 
 script
-    :   stmt? eos
+    :   stmt* EOF
     ;
 
 
