@@ -29,11 +29,9 @@ mulExpr: baseExpr ((Star | Div | Mod) baseExpr)*;
 
 addExpr: mulExpr ((Plus | Minus) mulExpr)*;
 
-relExpr: addExpr ((Less | Greater | LessEqual | GreaterEqual) addExpr)*;
+relExpr: addExpr ((Equal | NotEqual | Less | Greater | LessEqual | GreaterEqual) addExpr)*;
 
-eqExpr: relExpr ((Equal | NotEqual) relExpr)*;
-
-logAndExpr: eqExpr (And eqExpr)*;
+logAndExpr: relExpr (And relExpr)*;
 
 logOrExpr: logAndExpr (Or logAndExpr)*;
 
@@ -43,8 +41,8 @@ expr: logOrExpr;
 
 jsonValue
    : expr
-   | jsonObj
    | jsonArr
+   | jsonObj
    ;
 
 jsonPair
@@ -63,12 +61,18 @@ jsonObj
 
 // ASSIGNMENT ------------------------------------------------------------------------------------
 
-assignValue
-    : expr
-    | (jsonObj | jsonArr)
+assignId
+    :
+    Id (Dot Id)*
     ;
 
-assign: idExpr Assign assignValue;
+assignValue
+    : expr
+    | jsonArr
+    | jsonObj
+    ;
+
+assign: assignId Assign assignValue;
 
 // FLOW ------------------------------------------------------------------------------------
 

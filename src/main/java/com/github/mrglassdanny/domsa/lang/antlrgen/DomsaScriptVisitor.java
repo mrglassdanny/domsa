@@ -49,12 +49,6 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitRelExpr(DomsaScriptParser.RelExprContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#eqExpr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEqExpr(DomsaScriptParser.EqExprContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#logAndExpr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -96,6 +90,12 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitJsonObj(DomsaScriptParser.JsonObjContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DomsaScriptParser#assignId}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignId(DomsaScriptParser.AssignIdContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#assignValue}.
 	 * @param ctx the parse tree
