@@ -63,14 +63,12 @@ jsonObj
 
 // ASSIGNMENT ------------------------------------------------------------------------------------
 
-assignOper: Assign;
-
 assignValue
     : expr
     | (jsonObj | jsonArr)
     ;
 
-assign: idExpr assignOper assignValue;
+assign: idExpr Assign assignValue;
 
 // FLOW ------------------------------------------------------------------------------------
 

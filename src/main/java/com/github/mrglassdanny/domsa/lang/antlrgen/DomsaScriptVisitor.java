@@ -97,12 +97,6 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitJsonObj(DomsaScriptParser.JsonObjContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#assignOper}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAssignOper(DomsaScriptParser.AssignOperContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#assignValue}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

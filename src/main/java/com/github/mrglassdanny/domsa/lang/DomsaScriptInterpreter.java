@@ -264,11 +264,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public Object visitAssignOper(DomsaScriptParser.AssignOperContext ctx) {
-        return super.visitAssignOper(ctx);
-    }
-
-    @Override
     public Object visitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
         return super.visitAssignValue(ctx);
     }
