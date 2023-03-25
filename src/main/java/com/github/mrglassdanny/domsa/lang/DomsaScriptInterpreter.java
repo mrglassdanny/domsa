@@ -12,12 +12,24 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     private HashMap<String, DomsaScriptVariable> variables;
 
     public DomsaScriptInterpreter() {
-        this.variables = new HashMap<>();
+        this.variables = new HashMap<>(10);
     }
 
     @Override
-    public Object visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
-        return super.visitIdExpr(ctx);
+    public DomsaScriptVariable visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
+
+        if (this.variables.containsKey(ctx.getText())) {
+            var val = this.variables.get(ctx.getText());
+            return new DomsaScriptVariable(val.typ, val.data);
+        } else {
+            // Maybe an unidentified field in existing object.
+            if (this.variables.containsKey(ctx.Id(0).getText())) {
+                // TODO
+                return new DomsaScriptVariable(DomsaScriptType.Unknown, null);
+            } else {
+                return new DomsaScriptVariable(DomsaScriptType.Unknown, null);
+            }
+        }
     }
 
     @Override
@@ -25,58 +37,153 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         String fnName = ctx.Id().getText();
 
-        DomsaScriptType typ = DomsaScriptType.Unknown;
-        Object obj = null;
-
         if (fnName.equals("sql")) {
 
         } else if (fnName.equals("get")) {
 
         } else if (fnName.equals("post")) {
 
+        } else {
+
         }
 
-        return new DomsaScriptVariable(typ, obj);
+        return new DomsaScriptVariable(DomsaScriptType.Unknown, null);
     }
 
     @Override
-    public Object visitArithExpr(DomsaScriptParser.ArithExprContext ctx) {
-        return super.visitArithExpr(ctx);
+    public DomsaScriptVariable visitBaseExpr(DomsaScriptParser.BaseExprContext ctx) {
+        if (ctx.expr() != null) {
+            return this.visitExpr(ctx.expr());
+        } else if (ctx.idExpr() != null) {
+            return this.visitIdExpr((ctx.idExpr()));
+        } else if (ctx.fnExpr() != null) {
+            return this.visitFnExpr(ctx.fnExpr());
+        } else if (ctx.Number() != null) {
+            return new DomsaScriptVariable(DomsaScriptType.Number,
+                    Double.parseDouble(ctx.Number().getText()));
+        } else if (ctx.String() != null) {
+            return new DomsaScriptVariable(DomsaScriptType.String, ctx.Number().getText());
+        } else if (ctx.FormatString() != null) {
+            return new DomsaScriptVariable(DomsaScriptType.String, ctx.Number().getText());
+        } else if (ctx.True() != null) {
+            return new DomsaScriptVariable(DomsaScriptType.Boolean, true);
+        } else if (ctx.False() != null) {
+            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+        } else {
+            return new DomsaScriptVariable(DomsaScriptType.Unknown, null);
+        }
     }
 
     @Override
-    public Object visitMulExpr(DomsaScriptParser.MulExprContext ctx) {
-        return super.visitMulExpr(ctx);
+    public DomsaScriptVariable visitMulExpr(DomsaScriptParser.MulExprContext ctx) {
+        if (ctx.baseExpr().size() == 0) {
+            return this.visitBaseExpr(ctx.baseExpr(0));
+        } else {
+            var exprs = new ArrayList<DomsaScriptVariable>();
+
+            for (var exprCtx : ctx.baseExpr()) {
+                exprs.add(this.visitBaseExpr(exprCtx));
+            }
+
+            var res = new DomsaScriptVariable(DomsaScriptType.Number, exprs.get(0).data);
+
+            for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size() - 1; exprIdx++, operIdx += 2) {
+                String oper = ctx.children.get(operIdx).getText();
+                if (oper.equals("*")) {
+                    res.mul(exprs.get(exprIdx + 1));
+                } else if (oper.equals("/")) {
+                    res.div(exprs.get(exprIdx + 1));
+                } else {
+                    res.mod(exprs.get(exprIdx + 1));
+                }
+            }
+
+            return res;
+        }
     }
 
     @Override
-    public Object visitAddExpr(DomsaScriptParser.AddExprContext ctx) {
-        return super.visitAddExpr(ctx);
+    public DomsaScriptVariable visitAddExpr(DomsaScriptParser.AddExprContext ctx) {
+        if (ctx.mulExpr().size() == 0) {
+            return this.visitMulExpr(ctx.mulExpr(0));
+        } else {
+            var exprs = new ArrayList<DomsaScriptVariable>();
+
+            for (var exprCtx : ctx.mulExpr()) {
+                exprs.add(this.visitMulExpr(exprCtx));
+            }
+
+            var res = new DomsaScriptVariable(DomsaScriptType.Number, exprs.get(0).data);
+
+            for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size() - 1; exprIdx++, operIdx += 2) {
+                String oper = ctx.children.get(operIdx).getText();
+                if (oper.equals("+")) {
+                    res.add(exprs.get(exprIdx + 1));
+                } else {
+                    res.sub(exprs.get(exprIdx + 1));
+                }
+            }
+
+            return res;
+        }
     }
 
     @Override
-    public Object visitRelExpr(DomsaScriptParser.RelExprContext ctx) {
-        return super.visitRelExpr(ctx);
-    }
+    public DomsaScriptVariable visitRelExpr(DomsaScriptParser.RelExprContext ctx) {
+        if (ctx.addExpr().size() == 0) {
+            return this.visitAddExpr(ctx.addExpr(0));
+        } else {
+            var exprs = new ArrayList<DomsaScriptVariable>();
 
-    @Override
-    public DomsaScriptVariable visitEqValue(DomsaScriptParser.EqValueContext ctx) {
-        return super.visitEqValue(ctx);
+            for (var exprCtx : ctx.addExpr()) {
+                exprs.add(this.visitAddExpr(exprCtx));
+            }
+
+            for (int exprIdx = 0, operIdx = 1; exprIdx < exprs.size() - 1; exprIdx++, operIdx += 2) {
+                String oper = ctx.children.get(operIdx).getText();
+                int cmpRes = exprs.get(exprIdx).compare(exprs.get(exprIdx + 1));
+                switch (oper) {
+                    case "<":
+                        if (cmpRes >= 0) {
+                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        }
+                        break;
+                    case ">":
+                        if (cmpRes <= 0) {
+                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        }
+                        break;
+                    case "<=":
+                        if (cmpRes > 0) {
+                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        }
+                        break;
+                    default:
+                        if (cmpRes < 0) {
+                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        }
+                        break;
+                }
+            }
+
+            return new DomsaScriptVariable(DomsaScriptType.Boolean, true);
+        }
     }
 
     @Override
     public DomsaScriptVariable visitEqExpr(DomsaScriptParser.EqExprContext ctx) {
-        if (ctx.eqValue().size() == 0) {
-            return this.visitEqValue(ctx.eqValue(0));
+        if (ctx.relExpr().size() == 0) {
+            return this.visitRelExpr(ctx.relExpr(0));
         } else {
             var exprs = new ArrayList<DomsaScriptVariable>();
 
-            for (var exprCtx : ctx.eqValue()) {
-                exprs.add(this.visitEqValue(exprCtx));
+            for (var exprCtx : ctx.relExpr()) {
+                exprs.add(this.visitRelExpr(exprCtx));
             }
 
             for (int exprIdx = 0, operIdx = 1; exprIdx < exprs.size() - 1; exprIdx++, operIdx += 2) {
-                if (ctx.children.get(operIdx).getText().equals("==")) {
+                String oper = ctx.children.get(operIdx).getText();
+                if (oper.equals("==")) {
                     if (!exprs.get(exprIdx).equals(exprs.get(exprIdx + 1))) {
                         return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
                     }
@@ -132,8 +239,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public Object visitExpr(DomsaScriptParser.ExprContext ctx) {
-        return super.visitExpr(ctx);
+    public DomsaScriptVariable visitExpr(DomsaScriptParser.ExprContext ctx) {
+        return this.visitLogOrExpr(ctx.logOrExpr());
     }
 
     @Override

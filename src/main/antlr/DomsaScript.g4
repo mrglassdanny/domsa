@@ -26,17 +26,18 @@ baseExpr
     ;
 
 mulExpr: baseExpr ((Star | Div | Mod) baseExpr)*;
+
 addExpr: mulExpr ((Plus | Minus) mulExpr)*;
 
 relExpr: addExpr ((Less | Greater | LessEqual | GreaterEqual) addExpr)*;
-eqValue: (relExpr | String | FormatString | True | False | Null);
-eqExpr: eqValue ((Equal | NotEqual) eqValue)*;
+
+eqExpr: relExpr ((Equal | NotEqual) relExpr)*;
 
 logAndExpr: eqExpr (And eqExpr)*;
+
 logOrExpr: logAndExpr (Or logAndExpr)*;
 
-expr
-    : logOrExpr;
+expr: logOrExpr;
 
 // JSON ------------------------------------------------------------------------------------
 

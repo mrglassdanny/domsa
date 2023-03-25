@@ -15,6 +15,7 @@ import okhttp3.Response;
 
 public class ApiClient {
 
+
     public static JsonElement get(String urlStr) throws IOException, Exception {
 
         URL url = new URL(urlStr);
@@ -26,7 +27,7 @@ public class ApiClient {
                 .addHeader("Accept", "application/json").build();
 
         try (Response response = client.newCall(request).execute()) {
-            return new JsonParser().parseString(response.body().string());
+            return JsonParser.parseString(response.body().string());
         }
     }
 
@@ -44,7 +45,7 @@ public class ApiClient {
                 .addHeader("Accept", "application/json").build();
 
         try (Response response = client.newCall(request).execute()) {
-            return new JsonParser().parse(response.body().string());
+            return JsonParser.parseString(response.body().string());
         }
     }
 }

@@ -49,12 +49,6 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitRelExpr(DomsaScriptParser.RelExprContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#eqValue}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEqValue(DomsaScriptParser.EqValueContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#eqExpr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
