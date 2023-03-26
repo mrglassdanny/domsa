@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
-    private HashMap<String, DomsaScriptVariable> variables;
+    public HashMap<String, DomsaScriptVariable> variables; // TODO
 
     public DomsaScriptInterpreter() {
         this.variables = new HashMap<>(10);
@@ -74,7 +74,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public DomsaScriptVariable visitMulExpr(DomsaScriptParser.MulExprContext ctx) {
-        if (ctx.baseExpr().size() == 1) {
+        if (ctx.Star().isEmpty() && ctx.Div().isEmpty() && ctx.Mod().isEmpty()) {
             return this.visitBaseExpr(ctx.baseExpr(0));
         } else {
             var exprs = new ArrayList<DomsaScriptVariable>();
@@ -85,14 +85,14 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
             var res = new DomsaScriptVariable(DomsaScriptType.Number, exprs.get(0).data);
 
-            for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size() - 1; exprIdx++, operIdx += 2) {
+            for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size(); exprIdx++, operIdx += 2) {
                 String oper = ctx.children.get(operIdx).getText();
                 if (oper.equals("*")) {
-                    res.mul(exprs.get(exprIdx + 1));
+                    res.mul(exprs.get(exprIdx));
                 } else if (oper.equals("/")) {
-                    res.div(exprs.get(exprIdx + 1));
+                    res.div(exprs.get(exprIdx));
                 } else {
-                    res.mod(exprs.get(exprIdx + 1));
+                    res.mod(exprs.get(exprIdx));
                 }
             }
 
@@ -102,7 +102,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public DomsaScriptVariable visitAddExpr(DomsaScriptParser.AddExprContext ctx) {
-        if (ctx.mulExpr().size() == 1) {
+        if (ctx.Plus().isEmpty() && ctx.Minus().isEmpty()) {
             return this.visitMulExpr(ctx.mulExpr(0));
         } else {
             var exprs = new ArrayList<DomsaScriptVariable>();
@@ -113,12 +113,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
             var res = new DomsaScriptVariable(DomsaScriptType.Number, exprs.get(0).data);
 
-            for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size() - 1; exprIdx++, operIdx += 2) {
+            for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size(); exprIdx++, operIdx += 2) {
                 String oper = ctx.children.get(operIdx).getText();
                 if (oper.equals("+")) {
-                    res.add(exprs.get(exprIdx + 1));
+                    res.add(exprs.get(exprIdx));
                 } else {
-                    res.sub(exprs.get(exprIdx + 1));
+                    res.sub(exprs.get(exprIdx));
                 }
             }
 
@@ -128,7 +128,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public DomsaScriptVariable visitRelExpr(DomsaScriptParser.RelExprContext ctx) {
-        if (ctx.addExpr().size() == 1) {
+        if (ctx.Equal().isEmpty() && ctx.NotEqual().isEmpty() &&
+            ctx.Less().isEmpty() && ctx.Greater().isEmpty() &&
+            ctx.LessEqual().isEmpty() && ctx.GreaterEqual().isEmpty()) {
             return this.visitAddExpr(ctx.addExpr(0));
         } else {
             var exprs = new ArrayList<DomsaScriptVariable>();
@@ -179,7 +181,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public DomsaScriptVariable visitLogAndExpr(DomsaScriptParser.LogAndExprContext ctx) {
-        if (ctx.And().size() == 1) {
+        if (ctx.And().isEmpty()) {
             return this.visitRelExpr(ctx.relExpr(0));
         } else {
             var exprs = new ArrayList<DomsaScriptVariable>();
@@ -199,7 +201,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public DomsaScriptVariable visitLogOrExpr(DomsaScriptParser.LogOrExprContext ctx) {
-        if (ctx.Or().size() == 1) {
+        if (ctx.Or().isEmpty()) {
             return this.visitLogAndExpr(ctx.logAndExpr(0));
         } else {
             var exprs = new ArrayList<DomsaScriptVariable>();

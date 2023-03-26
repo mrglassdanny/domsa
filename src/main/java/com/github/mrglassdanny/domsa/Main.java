@@ -3,6 +3,7 @@ package com.github.mrglassdanny.domsa;
 
 import com.github.mrglassdanny.domsa.api.ApiClient;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
+import com.github.mrglassdanny.domsa.lang.DomsaScriptVariable;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.sql.SqlClient;
@@ -15,21 +16,20 @@ public class Main {
 
         SqlClient.init("C:\\Users\\danie\\OneDrive\\Desktop\\domsa.db");
 
-        var res = ApiClient.get("https://api.sportsdata.io/v3/cbb/scores/json/TeamSeasonStats/2023?key=125650329e0d47aa9f2caee8a2a6ce7a");
-
         var app = Javalin.create(/*config*/)
                 .get("/", ctx -> ctx.result("domsa v0.0.1"))
                 .start(7070);
 
         app.post("/script", ctx -> {
             String script = ctx.body();
-            System.out.println("Script: " + script);
 
             var parser = new DomsaScriptParser(
                     new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
             var scriptCtx = parser.script();
-            DomsaScriptInterpreter exec = new DomsaScriptInterpreter();
-            exec.visitScript(scriptCtx);
+            DomsaScriptInterpreter interp = new DomsaScriptInterpreter();
+            interp.visitScript(scriptCtx);
+
+            ctx.result(interp.variables.get("a").data.toString());
 
             ctx.status(200);
         });
