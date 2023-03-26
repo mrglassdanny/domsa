@@ -2,55 +2,49 @@ package com.github.mrglassdanny.domsa.lang;
 
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
-    public HashMap<String, DomsaScriptVariable> variables; // TODO
+    public HashMap<String, JsonElement> variables; // TODO
 
     public DomsaScriptInterpreter() {
         this.variables = new HashMap<>(10);
     }
 
     @Override
-    public DomsaScriptVariable visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
+    public JsonElement visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
 
         if (this.variables.containsKey(ctx.getText())) {
             var val = this.variables.get(ctx.getText());
-            return new DomsaScriptVariable(val.typ, val.data);
+            return val.deepCopy();
         } else {
-            // Maybe an unidentified field in existing object.
-            if (this.variables.containsKey(ctx.Id(0).getText())) {
-                // TODO
-                return new DomsaScriptVariable(DomsaScriptType.Unknown, null);
-            } else {
-                return new DomsaScriptVariable(DomsaScriptType.Unknown, null);
-            }
+            // TODO
+            return null;
         }
     }
 
     @Override
-    public DomsaScriptVariable visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
+    public JsonElement visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
 
         String fnName = ctx.Id().getText();
 
         if (fnName.equals("sql")) {
-            return new DomsaScriptVariable(DomsaScriptType.Array, null);
+            return null;
         } else if (fnName.equals("get")) {
-            return new DomsaScriptVariable(DomsaScriptType.Object, null);
+            return null;
         } else if (fnName.equals("post")) {
-            return new DomsaScriptVariable(DomsaScriptType.Object, null);
+            return null;
         } else {
-            return new DomsaScriptVariable(DomsaScriptType.Unknown, null);
+            return null;
         }
     }
 
     @Override
-    public DomsaScriptVariable visitBaseExpr(DomsaScriptParser.BaseExprContext ctx) {
+    public JsonElement visitBaseExpr(DomsaScriptParser.BaseExprContext ctx) {
         if (ctx.expr() != null) {
             return this.visitExpr(ctx.expr());
         } else if (ctx.idExpr() != null) {
@@ -58,42 +52,42 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         } else if (ctx.fnExpr() != null) {
             return this.visitFnExpr(ctx.fnExpr());
         } else if (ctx.Number() != null) {
-            return new DomsaScriptVariable(DomsaScriptType.Number,
-                    Double.parseDouble(ctx.Number().getText()));
+            return new JsonPrimitive(ctx.Number().getText());
         } else if (ctx.String() != null) {
-            return new DomsaScriptVariable(DomsaScriptType.String, ctx.Number().getText());
+            return new JsonPrimitive(ctx.String().getText());
         } else if (ctx.FormatString() != null) {
-            return new DomsaScriptVariable(DomsaScriptType.String, ctx.Number().getText());
+            // TODO
+            return new JsonPrimitive(ctx.FormatString().getText());
         } else if (ctx.True() != null) {
-            return new DomsaScriptVariable(DomsaScriptType.Boolean, true);
+            return new JsonPrimitive(true);
         } else if (ctx.False() != null) {
-            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+            return new JsonPrimitive(false);
         } else {
-            return new DomsaScriptVariable(DomsaScriptType.Unknown, null);
+            return null;
         }
     }
 
     @Override
-    public DomsaScriptVariable visitMulExpr(DomsaScriptParser.MulExprContext ctx) {
+    public JsonElement visitMulExpr(DomsaScriptParser.MulExprContext ctx) {
         if (ctx.Star().isEmpty() && ctx.Div().isEmpty() && ctx.Mod().isEmpty()) {
             return this.visitBaseExpr(ctx.baseExpr(0));
         } else {
-            var exprs = new ArrayList<DomsaScriptVariable>();
+            var exprs = new ArrayList<JsonElement>();
 
             for (var exprCtx : ctx.baseExpr()) {
                 exprs.add(this.visitBaseExpr(exprCtx));
             }
 
-            var res = new DomsaScriptVariable(DomsaScriptType.Number, exprs.get(0).data);
+            var res = exprs.get(0).deepCopy();
 
             for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size(); exprIdx++, operIdx += 2) {
                 String oper = ctx.children.get(operIdx).getText();
                 if (oper.equals("*")) {
-                    res.mul(exprs.get(exprIdx));
+                    res = JsonHelper.mul(res, exprs.get(exprIdx));
                 } else if (oper.equals("/")) {
-                    res.div(exprs.get(exprIdx));
+                    res = JsonHelper.div(res, exprs.get(exprIdx));
                 } else {
-                    res.mod(exprs.get(exprIdx));
+                    res = JsonHelper.mod(res, exprs.get(exprIdx));
                 }
             }
 
@@ -102,24 +96,24 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public DomsaScriptVariable visitAddExpr(DomsaScriptParser.AddExprContext ctx) {
+    public JsonElement visitAddExpr(DomsaScriptParser.AddExprContext ctx) {
         if (ctx.Plus().isEmpty() && ctx.Minus().isEmpty()) {
             return this.visitMulExpr(ctx.mulExpr(0));
         } else {
-            var exprs = new ArrayList<DomsaScriptVariable>();
+            var exprs = new ArrayList<JsonElement>();
 
             for (var exprCtx : ctx.mulExpr()) {
                 exprs.add(this.visitMulExpr(exprCtx));
             }
 
-            var res = new DomsaScriptVariable(DomsaScriptType.Number, exprs.get(0).data);
+            var res = exprs.get(0).deepCopy();
 
             for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size(); exprIdx++, operIdx += 2) {
                 String oper = ctx.children.get(operIdx).getText();
                 if (oper.equals("+")) {
-                    res.add(exprs.get(exprIdx));
+                    res = JsonHelper.add(res, exprs.get(exprIdx));
                 } else {
-                    res.sub(exprs.get(exprIdx));
+                    res = JsonHelper.sub(res, exprs.get(exprIdx));
                 }
             }
 
@@ -128,13 +122,13 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public DomsaScriptVariable visitRelExpr(DomsaScriptParser.RelExprContext ctx) {
+    public JsonElement visitRelExpr(DomsaScriptParser.RelExprContext ctx) {
         if (ctx.Equal().isEmpty() && ctx.NotEqual().isEmpty() &&
             ctx.Less().isEmpty() && ctx.Greater().isEmpty() &&
             ctx.LessEqual().isEmpty() && ctx.GreaterEqual().isEmpty()) {
             return this.visitAddExpr(ctx.addExpr(0));
         } else {
-            var exprs = new ArrayList<DomsaScriptVariable>();
+            var exprs = new ArrayList<JsonElement>();
 
             for (var exprCtx : ctx.addExpr()) {
                 exprs.add(this.visitAddExpr(exprCtx));
@@ -144,107 +138,127 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                 String oper = ctx.children.get(operIdx).getText();
                 switch (oper) {
                     case "==":
-                        if (!exprs.get(exprIdx).equals(exprs.get(exprIdx + 1))) {
-                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        if (!JsonHelper.equals(exprs.get(exprIdx),(exprs.get(exprIdx + 1)))) {
+                            return new JsonPrimitive(false);
                         }
                         break;
                     case "!=":
-                        if (exprs.get(exprIdx).equals(exprs.get(exprIdx + 1))) {
-                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        if (JsonHelper.equals(exprs.get(exprIdx), (exprs.get(exprIdx + 1)))) {
+                            return new JsonPrimitive(false);
                         }
                         break;
                     case "<":
-                        if (exprs.get(exprIdx).compare(exprs.get(exprIdx + 1)) >= 0) {
-                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) >= 0) {
+                            return new JsonPrimitive(false);
                         }
                         break;
                     case ">":
-                        if (exprs.get(exprIdx).compare(exprs.get(exprIdx + 1)) <= 0) {
-                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) <= 0) {
+                            return new JsonPrimitive(false);
                         }
                         break;
                     case "<=":
-                        if (exprs.get(exprIdx).compare(exprs.get(exprIdx + 1)) > 0) {
-                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) > 0) {
+                            return new JsonPrimitive(false);
                         }
                         break;
                     default:
-                        if (exprs.get(exprIdx).compare(exprs.get(exprIdx + 1)) < 0) {
-                            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+                        if (JsonHelper.compare(exprs.get(exprIdx),(exprs.get(exprIdx + 1))) < 0) {
+                            return new JsonPrimitive(false);
                         }
                         break;
                 }
             }
 
-            return new DomsaScriptVariable(DomsaScriptType.Boolean, true);
+            return new JsonPrimitive(true);
         }
     }
 
     @Override
-    public DomsaScriptVariable visitLogAndExpr(DomsaScriptParser.LogAndExprContext ctx) {
+    public JsonElement visitLogAndExpr(DomsaScriptParser.LogAndExprContext ctx) {
         if (ctx.And().isEmpty()) {
             return this.visitRelExpr(ctx.relExpr(0));
         } else {
-            var exprs = new ArrayList<DomsaScriptVariable>();
+            var exprs = new ArrayList<JsonElement>();
 
             for (var exprCtx : ctx.relExpr()) {
                 exprs.add(this.visitRelExpr(exprCtx));
             }
 
             for (var expr : exprs) {
-                if (expr.data.equals(false))
+                if (!expr.getAsBoolean())
                     return expr;
             }
 
-            return new DomsaScriptVariable(DomsaScriptType.Boolean, true);
+            return new JsonPrimitive(true);
         }
     }
 
     @Override
-    public DomsaScriptVariable visitLogOrExpr(DomsaScriptParser.LogOrExprContext ctx) {
+    public JsonElement visitLogOrExpr(DomsaScriptParser.LogOrExprContext ctx) {
         if (ctx.Or().isEmpty()) {
             return this.visitLogAndExpr(ctx.logAndExpr(0));
         } else {
-            var exprs = new ArrayList<DomsaScriptVariable>();
+            var exprs = new ArrayList<JsonElement>();
 
             for (var exprCtx : ctx.logAndExpr()) {
                 exprs.add(this.visitLogAndExpr(exprCtx));
             }
 
             for (var expr : exprs) {
-                if (expr.data.equals(true))
+                if (expr.getAsBoolean())
                     return expr;
             }
 
-            return new DomsaScriptVariable(DomsaScriptType.Boolean, false);
+            return new JsonPrimitive(false);
         }
     }
 
     @Override
-    public DomsaScriptVariable visitExpr(DomsaScriptParser.ExprContext ctx) {
+    public JsonElement visitExpr(DomsaScriptParser.ExprContext ctx) {
         return this.visitLogOrExpr(ctx.logOrExpr());
     }
 
     @Override
-    public Object visitJsonValue(DomsaScriptParser.JsonValueContext ctx) {
-        return super.visitJsonValue(ctx);
+    public JsonElement visitJsonValue(DomsaScriptParser.JsonValueContext ctx) {
+        if (!ctx.expr().isEmpty()) {
+            return this.visitExpr(ctx.expr());
+        } else if (!ctx.jsonArr().isEmpty()) {
+            return this.visitJsonArr(ctx.jsonArr());
+        } else {
+            return this.visitJsonObj(ctx.jsonObj());
+        }
     }
 
     @Override
-    public Object visitJsonPair(DomsaScriptParser.JsonPairContext ctx) {
-        return super.visitJsonPair(ctx);
+    public JsonElement visitJsonPair(DomsaScriptParser.JsonPairContext ctx) {
+        var val = this.visitJsonValue(ctx.jsonValue());
+        this.variables.put(ctx.Id().getText(), val);
+        return val;
     }
 
     @Override
-    public DomsaScriptVariable visitJsonArr(DomsaScriptParser.JsonArrContext ctx) {
-        // TODO
-        return new DomsaScriptVariable(DomsaScriptType.Array, JsonParser.parseString(ctx.getText()));
+    public JsonElement visitJsonArr(DomsaScriptParser.JsonArrContext ctx) {
+
+        var arr = new JsonArray(ctx.jsonValue().size());
+
+        for(var val : ctx.jsonValue()) {
+            arr.add(this.visitJsonValue(val));
+        }
+
+        return arr;
     }
 
     @Override
-    public DomsaScriptVariable visitJsonObj(DomsaScriptParser.JsonObjContext ctx) {
-        // TODO
-        return new DomsaScriptVariable(DomsaScriptType.Object, JsonParser.parseString(ctx.getText()));
+    public JsonElement visitJsonObj(DomsaScriptParser.JsonObjContext ctx) {
+
+        var obj = new JsonObject();
+
+        for (var pair : ctx.jsonPair()) {
+            obj.add(pair.Id().getText(), this.visitJsonValue(pair.jsonValue()));
+        }
+
+        return obj;
     }
 
     @Override
@@ -254,7 +268,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public DomsaScriptVariable visitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
+    public JsonElement visitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
         if (ctx.expr() != null) {
             return this.visitExpr(ctx.expr());
         } else if (ctx.jsonArr() != null) {
@@ -308,7 +322,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             var res = this.visitExpr(ctx.expr(exprIdx));
 
             // Looking for successful conditional test or the else.
-            if (res.data.equals(true) || (exprIdx == ctx.expr().size() - 1 && ctx.Else() != null)) {
+            if (res.getAsBoolean() || (exprIdx == ctx.expr().size() - 1 && ctx.Else() != null)) {
                 this.visitNestStmt(ctx.nestStmt(exprIdx));
                 break;
             }
@@ -324,11 +338,13 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         var list = ctx.Id(1).getText();
 
         var listObj = this.variables.get(list);
-        if (listObj == null || listObj.typ != DomsaScriptType.Array) {
+        if (listObj == null) {
             // TODO
         }
 
-        var arr = listObj.data;
+        var arr = listObj.getAsJsonArray();
+
+
 
         return null;
     }
@@ -341,5 +357,69 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public Object visitScript(DomsaScriptParser.ScriptContext ctx) {
         return super.visitScript(ctx);
+    }
+
+
+    static class JsonHelper {
+
+        public static JsonElement mul(JsonElement a, JsonElement b) {
+            return new JsonPrimitive(a.getAsDouble() * b.getAsDouble());
+        }
+
+        public static JsonElement div(JsonElement a, JsonElement b) {
+            return new JsonPrimitive(a.getAsDouble() / b.getAsDouble());
+        }
+
+        public static JsonElement mod(JsonElement a, JsonElement b) {
+            return new JsonPrimitive(a.getAsDouble() % b.getAsDouble());
+        }
+
+        public static JsonElement add(JsonElement a, JsonElement b) {
+            return new JsonPrimitive(a.getAsDouble() + b.getAsDouble());
+        }
+
+        public static JsonElement sub(JsonElement a, JsonElement b) {
+            return new JsonPrimitive(a.getAsDouble() - b.getAsDouble());
+        }
+
+        public static boolean equals(JsonElement a, JsonElement b) {
+            if (a == b) {
+                return true;
+            }
+
+            return compare(a, b) == 0;
+        }
+
+        public static int compare(JsonElement a, JsonElement b) {
+            if (a.isJsonPrimitive() && b.isJsonPrimitive()) {
+                try {
+                    var aVal = a.getAsDouble();
+                    var bVal = b.getAsDouble();
+                    return Double.compare(aVal, bVal);
+                } catch (Exception numException) {
+                    try {
+                        var aVal = a.getAsBoolean();
+                        var bVal = b.getAsBoolean();
+                        return Boolean.compare(aVal, bVal);
+                    } catch (Exception boolException) {
+                        try {
+                            var aVal = a.getAsString();
+                            var bVal = b.getAsString();
+                            return aVal.compareTo(bVal);
+                        } catch (Exception strException) {
+                            // TODO
+                            return 0;
+                        }
+                    }
+                }
+            } else {
+                // TODO
+                return 0;
+            }
+        }
+
+        public static boolean isVariable(JsonElement a) {
+            return a != null && !a.isJsonNull() && !a.isJsonObject() && !a.isJsonArray() && !a.isJsonPrimitive();
+        }
     }
 }

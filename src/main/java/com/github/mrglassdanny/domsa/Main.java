@@ -1,9 +1,7 @@
 package com.github.mrglassdanny.domsa;
 
 
-import com.github.mrglassdanny.domsa.api.ApiClient;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
-import com.github.mrglassdanny.domsa.lang.DomsaScriptVariable;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.sql.SqlClient;
@@ -29,7 +27,7 @@ public class Main {
             var interp = new DomsaScriptInterpreter();
             interp.visitScript(scriptCtx);
 
-            ctx.result(interp.variables.get("_res").data.toString());
+            ctx.result(interp.variables.get("_res").toString());
 
             ctx.status(200);
         });
