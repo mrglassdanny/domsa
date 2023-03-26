@@ -26,10 +26,10 @@ public class Main {
             var parser = new DomsaScriptParser(
                     new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
             var scriptCtx = parser.script();
-            DomsaScriptInterpreter interp = new DomsaScriptInterpreter();
+            var interp = new DomsaScriptInterpreter();
             interp.visitScript(scriptCtx);
 
-            ctx.result(interp.variables.get("a").data.toString());
+            ctx.result(interp.variables.get("_res").data.toString());
 
             ctx.status(200);
         });

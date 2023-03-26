@@ -2,6 +2,7 @@ package com.github.mrglassdanny.domsa.lang;
 
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
@@ -301,12 +302,35 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public Object visitCondStmt(DomsaScriptParser.CondStmtContext ctx) {
-        return super.visitCondStmt(ctx);
+
+        for (int exprIdx = 0; exprIdx < ctx.expr().size(); exprIdx++) {
+
+            var res = this.visitExpr(ctx.expr(exprIdx));
+
+            // Looking for successful conditional test or the else.
+            if (res.data.equals(true) || (exprIdx == ctx.expr().size() - 1 && ctx.Else() != null)) {
+                this.visitNestStmt(ctx.nestStmt(exprIdx));
+                break;
+            }
+        }
+
+        return null;
     }
 
     @Override
     public Object visitIterStmt(DomsaScriptParser.IterStmtContext ctx) {
-        return super.visitIterStmt(ctx);
+
+        var iter = ctx.Id(0).getText();
+        var list = ctx.Id(1).getText();
+
+        var listObj = this.variables.get(list);
+        if (listObj == null || listObj.typ != DomsaScriptType.Array) {
+            // TODO
+        }
+
+        var arr = listObj.data;
+
+        return null;
     }
 
     @Override

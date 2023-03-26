@@ -97,7 +97,7 @@ nestStmt
     ;
 
 condStmt
-    :   If expr nestStmt (Else If expr nestStmt)? (Else nestStmt)?
+    :   If expr nestStmt (Elif expr nestStmt)? (Else nestStmt)?
     ;
 
 iterStmt
@@ -120,6 +120,7 @@ script
 Break : 'break';
 Case : 'case';
 Default: 'default';
+Elif: 'elif';
 Else : 'else';
 False: 'false';
 For : 'for';
