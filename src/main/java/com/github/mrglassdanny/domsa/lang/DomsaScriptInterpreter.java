@@ -65,7 +65,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         } else if (ctx.Number() != null) {
             return new JsonPrimitive(ctx.Number().getText());
         } else if (ctx.String() != null) {
-            return new JsonPrimitive(ctx.String().getText());
+            var str = ctx.String().getText();
+            return new JsonPrimitive(str.substring(1, str.length() - 1));
         } else if (ctx.FormatString() != null) {
             String fmtStrRes = ctx.FormatString().getText();
             Matcher matcher = FORMAT_STRING_PATTERN.matcher(ctx.FormatString().getText());
@@ -285,11 +286,14 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public AssignTuple visitAssignId(DomsaScriptParser.AssignIdContext ctx) {
-        // TODO
+
+        // If not object expression: return name of variable to be inserted into variables map later.
+        // If object expression: return name and parent object.
 
         if (ctx.Dot().isEmpty()) {
             return new AssignTuple(ctx.getText(), null);
         } else {
+            // TODO: if obj is null at any point we have a problem
             var obj = this.variables.get(ctx.Id(0).getText());
             int dotIdx = 0;
             int idIdx = 1;
@@ -316,7 +320,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         var tup = this.visitAssignId(ctx.assignId());
 
-        if (tup.data == null) {
+
+        if (tup.data == null) { // Not object expression
             if (ctx.assignValue().expr() != null) {
                 this.variables.put(tup.name, this.visitExpr(ctx.assignValue().expr()));
             } else if (ctx.assignValue().jsonArr() != null) {
@@ -324,7 +329,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             } else {
                 this.variables.put(tup.name, this.visitJsonObj(ctx.assignValue().jsonObj()));
             }
-        } else {
+        } else { // Object expression
             if (ctx.assignValue().expr() != null) {
                 tup.data.getAsJsonObject().add(tup.name, this.visitExpr(ctx.assignValue().expr()));
             } else if (ctx.assignValue().jsonArr() != null) {
