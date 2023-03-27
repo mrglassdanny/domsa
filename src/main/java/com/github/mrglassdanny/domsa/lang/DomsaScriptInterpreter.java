@@ -24,13 +24,16 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public JsonElement visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
+        // TODO
 
-        if (this.variables.containsKey(ctx.getText())) {
-            var val = this.variables.get(ctx.getText());
-            return val.deepCopy();
+        if (ctx.Dot().isEmpty()) {
+            return this.variables.getOrDefault(ctx.getText(), null);
         } else {
-            // TODO
-            return null;
+            var obj = this.variables.get(ctx.Id(0).getText());
+            for (int dotIdx = 0, idIdx = 1; dotIdx < ctx.Dot().size() - 1; dotIdx++, idIdx++) {
+                obj = obj.getAsJsonObject().get(ctx.Id(idIdx).getText());
+            }
+            return obj.getAsJsonObject().get(ctx.Id(ctx.Id().size() - 1).getText());
         }
     }
 
@@ -65,7 +68,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return new JsonPrimitive(ctx.String().getText());
         } else if (ctx.FormatString() != null) {
             String fmtStrRes = ctx.FormatString().getText();
-
             Matcher matcher = FORMAT_STRING_PATTERN.matcher(ctx.FormatString().getText());
             while(matcher.find()) {
                 String matchStr = matcher.group();
@@ -282,9 +284,20 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public String visitAssignId(DomsaScriptParser.AssignIdContext ctx) {
+    public AssignTuple visitAssignId(DomsaScriptParser.AssignIdContext ctx) {
         // TODO
-        return ctx.getText();
+
+        if (ctx.Dot().isEmpty()) {
+            return new AssignTuple(ctx.getText(), null);
+        } else {
+            var obj = this.variables.get(ctx.Id(0).getText());
+            int dotIdx = 0;
+            int idIdx = 1;
+            for (; dotIdx < ctx.Dot().size() - 1; dotIdx++, idIdx++) {
+                obj = obj.getAsJsonObject().get(ctx.Id(idIdx).getText());
+            }
+            return new AssignTuple(ctx.Id(idIdx).getText(), obj.getAsJsonObject());
+        }
     }
 
     @Override
@@ -301,17 +314,27 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public String visitAssign(DomsaScriptParser.AssignContext ctx) {
 
-        String varName = this.visitAssignId(ctx.assignId());
+        var tup = this.visitAssignId(ctx.assignId());
 
-        if (ctx.assignValue().expr() != null) {
-            this.variables.put(varName, this.visitExpr(ctx.assignValue().expr()));
-        } else if (ctx.assignValue().jsonArr() != null) {
-            this.variables.put(varName, this.visitJsonArr(ctx.assignValue().jsonArr()));
+        if (tup.data == null) {
+            if (ctx.assignValue().expr() != null) {
+                this.variables.put(tup.name, this.visitExpr(ctx.assignValue().expr()));
+            } else if (ctx.assignValue().jsonArr() != null) {
+                this.variables.put(tup.name, this.visitJsonArr(ctx.assignValue().jsonArr()));
+            } else {
+                this.variables.put(tup.name, this.visitJsonObj(ctx.assignValue().jsonObj()));
+            }
         } else {
-            this.variables.put(varName, this.visitJsonObj(ctx.assignValue().jsonObj()));
+            if (ctx.assignValue().expr() != null) {
+                tup.data.getAsJsonObject().add(tup.name, this.visitExpr(ctx.assignValue().expr()));
+            } else if (ctx.assignValue().jsonArr() != null) {
+                tup.data.getAsJsonObject().add(tup.name, this.visitJsonArr(ctx.assignValue().jsonArr()));
+            } else {
+                tup.data.getAsJsonObject().add(tup.name, this.visitJsonObj(ctx.assignValue().jsonObj()));
+            }
         }
 
-        return varName;
+        return null;
     }
 
     @Override
@@ -387,6 +410,16 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public Object visitScript(DomsaScriptParser.ScriptContext ctx) {
         return super.visitScript(ctx);
+    }
+
+    class AssignTuple {
+        public String name;
+        public JsonElement data;
+
+        AssignTuple(String name, JsonElement data) {
+            this.name = name;
+            this.data = data;
+        }
     }
 
 
