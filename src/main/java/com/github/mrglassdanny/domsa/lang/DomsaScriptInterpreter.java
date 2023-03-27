@@ -3,10 +3,13 @@ package com.github.mrglassdanny.domsa.lang;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
+import com.github.mrglassdanny.domsa.sql.SqlClient;
 import com.google.gson.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -44,7 +47,28 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         if (fnName.equals("sql")) {
 
-            return null;
+            var arr = new JsonArray();
+
+            var exprRes = this.visitExpr(ctx.expr());
+            ResultSet sqlRes = null;
+            try {
+                sqlRes = SqlClient.execQuery(exprRes.getAsString());
+                var cols = sqlRes.getMetaData();
+                while(sqlRes.next()) {
+                    var obj = new JsonObject();
+                    for (int colIdx = 1; colIdx <= cols.getColumnCount(); colIdx++) {
+                        var col = cols.getColumnName(colIdx);
+                        obj.add(col, new JsonPrimitive(sqlRes.getObject(colIdx).toString()));
+                    }
+                    arr.add(obj);
+                }
+                sqlRes.close();
+            } catch (SQLException sqlException) {
+                // TODO
+                arr.add(sqlException.getMessage());
+            }
+
+            return arr;
         } else if (fnName.equals("get")) {
             return null;
         } else if (fnName.equals("post")) {
@@ -369,7 +393,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public Object visitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
-        return this.visitStmt(ctx.stmt());
+        Object stmtRes = null;
+        for (var stmt : ctx.stmt()) {
+            stmtRes = this.visitStmt(stmt);
+        }
+        return stmtRes;
     }
 
     @Override
@@ -417,7 +445,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         return super.visitScript(ctx);
     }
 
-    class AssignTuple {
+    static class AssignTuple {
         public String name;
         public JsonElement data;
 

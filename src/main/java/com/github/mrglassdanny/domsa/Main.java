@@ -29,9 +29,10 @@ public class Main {
 
             ctx.result(interp.variables.get("_res").toString());
 
+            ctx.contentType("application/json");
             ctx.status(200);
         });
 
-        SqlClient.close();
+        // SqlClient.close();
     }
 }

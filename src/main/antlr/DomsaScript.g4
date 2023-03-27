@@ -93,7 +93,7 @@ assignStmt
     :   assign;
 
 nestStmt
-    :   LeftBrace stmt? RightBrace
+    :   LeftBrace stmt* RightBrace
     ;
 
 condStmt
