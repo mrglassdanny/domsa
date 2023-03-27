@@ -46,29 +46,46 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         String fnName = ctx.Id().getText();
 
         if (fnName.equals("sql")) {
-
-            var arr = new JsonArray();
-
             var exprRes = this.visitExpr(ctx.expr());
-            ResultSet sqlRes = null;
-            try {
-                sqlRes = SqlClient.execQuery(exprRes.getAsString());
-                var cols = sqlRes.getMetaData();
-                while(sqlRes.next()) {
-                    var obj = new JsonObject();
-                    for (int colIdx = 1; colIdx <= cols.getColumnCount(); colIdx++) {
-                        var col = cols.getColumnName(colIdx);
-                        obj.add(col, new JsonPrimitive(sqlRes.getObject(colIdx).toString()));
+            if (exprRes.getAsString().contains("select")) {
+                var arr = new JsonArray();
+
+
+                ResultSet sqlRes = null;
+                try {
+                    sqlRes = SqlClient.execQuery(exprRes.getAsString());
+                    var cols = sqlRes.getMetaData();
+                    while(sqlRes.next()) {
+                        var obj = new JsonObject();
+                        for (int colIdx = 1; colIdx <= cols.getColumnCount(); colIdx++) {
+                            var col = cols.getColumnName(colIdx);
+                            obj.add(col, new JsonPrimitive(sqlRes.getObject(colIdx).toString()));
+                        }
+                        arr.add(obj);
                     }
-                    arr.add(obj);
+                    sqlRes.close();
+                } catch (SQLException sqlException) {
+                    // TODO
+                    var obj = new JsonObject();
+                    obj.add("message", new JsonPrimitive(sqlException.getMessage()));
+                    return obj;
                 }
-                sqlRes.close();
-            } catch (SQLException sqlException) {
-                // TODO
-                arr.add(sqlException.getMessage());
+
+                return arr;
+            } else {
+                var obj = new JsonObject();
+
+                try {
+                    int rowsAffected = SqlClient.exec(exprRes.getAsString());
+                    obj.add("rowsAffected", new JsonPrimitive(rowsAffected));
+                } catch (SQLException sqlException) {
+                    // TODO
+                    obj.add("message", new JsonPrimitive(sqlException.getMessage()));
+                }
+
+                return obj;
             }
 
-            return arr;
         } else if (fnName.equals("get")) {
             return null;
         } else if (fnName.equals("post")) {
@@ -100,8 +117,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                 var parser = new DomsaScriptParser(
                         new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(exprStr))));
                 var exprCtx = parser.expr();
-                var interp = new DomsaScriptInterpreter();
-                var exprRes = interp.visitExpr(exprCtx);
+                var exprRes = this.visitExpr(exprCtx);
                 fmtStrRes = fmtStrRes.replace(matchStr, exprRes.getAsString().replace("\"", ""));
             }
             return new JsonPrimitive(fmtStrRes.substring(1, fmtStrRes.length() - 1));

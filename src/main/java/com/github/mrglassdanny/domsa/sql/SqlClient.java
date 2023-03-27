@@ -18,9 +18,9 @@ public class SqlClient {
         conn.close();
     }
 
-    public static void exec(String query) throws SQLException {
+    public static int exec(String query) throws SQLException {
         Statement stmt = conn.createStatement();
-        stmt.execute(query);
+        return stmt.executeUpdate(query);
     }
 
     public static ResultSet execQuery(String query) throws SQLException {
