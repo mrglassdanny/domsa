@@ -40,6 +40,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         String fnName = ctx.Id().getText();
 
         if (fnName.equals("sql")) {
+
             return null;
         } else if (fnName.equals("get")) {
             return null;
@@ -156,36 +157,36 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             for (int exprIdx = 0, operIdx = 1; exprIdx < exprs.size() - 1; exprIdx++, operIdx += 2) {
                 String oper = ctx.children.get(operIdx).getText();
                 switch (oper) {
-                    case "==":
-                        if (!JsonHelper.equals(exprs.get(exprIdx),(exprs.get(exprIdx + 1)))) {
+                    case "==" -> {
+                        if (!JsonHelper.equals(exprs.get(exprIdx), (exprs.get(exprIdx + 1)))) {
                             return new JsonPrimitive(false);
                         }
-                        break;
-                    case "!=":
+                    }
+                    case "!=" -> {
                         if (JsonHelper.equals(exprs.get(exprIdx), (exprs.get(exprIdx + 1)))) {
                             return new JsonPrimitive(false);
                         }
-                        break;
-                    case "<":
+                    }
+                    case "<" -> {
                         if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) >= 0) {
                             return new JsonPrimitive(false);
                         }
-                        break;
-                    case ">":
+                    }
+                    case ">" -> {
                         if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) <= 0) {
                             return new JsonPrimitive(false);
                         }
-                        break;
-                    case "<=":
+                    }
+                    case "<=" -> {
                         if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) > 0) {
                             return new JsonPrimitive(false);
                         }
-                        break;
-                    default:
-                        if (JsonHelper.compare(exprs.get(exprIdx),(exprs.get(exprIdx + 1))) < 0) {
+                    }
+                    default -> {
+                        if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) < 0) {
                             return new JsonPrimitive(false);
                         }
-                        break;
+                    }
                 }
             }
 
@@ -320,17 +321,27 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public Object visitStmt(DomsaScriptParser.StmtContext ctx) {
-        return super.visitStmt(ctx);
+        if (ctx.nestStmt() != null) {
+            return this.visitNestStmt(ctx.nestStmt());
+        } else if (ctx.assignStmt() != null) {
+            return this.visitAssignStmt(ctx.assignStmt());
+        } else if (ctx.condStmt() != null) {
+            return this.visitCondStmt(ctx.condStmt());
+        } else if (ctx.iterStmt() != null) {
+            return this.visitIterStmt(ctx.iterStmt());
+        }
+
+        return null;
     }
 
     @Override
     public Object visitAssignStmt(DomsaScriptParser.AssignStmtContext ctx) {
-        return super.visitAssignStmt(ctx);
+        return this.visitAssign(ctx.assign());
     }
 
     @Override
     public Object visitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
-        return super.visitNestStmt(ctx);
+        return this.visitStmt(ctx.stmt());
     }
 
     @Override
@@ -353,17 +364,17 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public Object visitIterStmt(DomsaScriptParser.IterStmtContext ctx) {
 
-        var iter = ctx.Id(0).getText();
-        var list = ctx.Id(1).getText();
+        if (ctx.For() != null) {
+            var iterName = ctx.Id(0).getText();
+            var listName = ctx.Id(1).getText();
 
-        var listObj = this.variables.get(list);
-        if (listObj == null) {
-            // TODO
+            var arr = this.variables.get(listName).getAsJsonArray();
+
+            for (var elem : arr) {
+                this.variables.put(iterName, elem);
+                this.visitNestStmt(ctx.nestStmt());
+            }
         }
-
-        var arr = listObj.getAsJsonArray();
-
-
 
         return null;
     }
