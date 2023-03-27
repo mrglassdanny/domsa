@@ -221,9 +221,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public JsonElement visitJsonValue(DomsaScriptParser.JsonValueContext ctx) {
-        if (!ctx.expr().isEmpty()) {
+        if (ctx.expr() != null) {
             return this.visitExpr(ctx.expr());
-        } else if (!ctx.jsonArr().isEmpty()) {
+        } else if (ctx.jsonArr() != null) {
             return this.visitJsonArr(ctx.jsonArr());
         } else {
             return this.visitJsonObj(ctx.jsonObj());
