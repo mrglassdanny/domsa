@@ -1,13 +1,20 @@
 package com.github.mrglassdanny.domsa.lang;
 
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
+import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.google.gson.*;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
+
+    private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\$\\{.*?}", Pattern.CASE_INSENSITIVE);
 
     public HashMap<String, JsonElement> variables; // TODO
 
@@ -56,8 +63,20 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         } else if (ctx.String() != null) {
             return new JsonPrimitive(ctx.String().getText());
         } else if (ctx.FormatString() != null) {
-            // TODO
-            return new JsonPrimitive(ctx.FormatString().getText());
+            String fmtStrRes = ctx.FormatString().getText();
+
+            Matcher matcher = FORMAT_STRING_PATTERN.matcher(ctx.FormatString().getText());
+            while(matcher.find()) {
+                String matchStr = matcher.group();
+                String exprStr = matchStr.substring(2, matchStr.length() - 1);
+                var parser = new DomsaScriptParser(
+                        new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(exprStr))));
+                var exprCtx = parser.expr();
+                var interp = new DomsaScriptInterpreter();
+                var exprRes = interp.visitExpr(exprCtx);
+                fmtStrRes = fmtStrRes.replace(matchStr, exprRes.getAsString().replace("\"", ""));
+            }
+            return new JsonPrimitive(fmtStrRes.substring(1, fmtStrRes.length() - 1));
         } else if (ctx.True() != null) {
             return new JsonPrimitive(true);
         } else if (ctx.False() != null) {
