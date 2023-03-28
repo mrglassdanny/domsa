@@ -31,7 +31,7 @@ public class ApiClient {
         }
     }
 
-    public static JsonElement post(String urlStr, String reqStr) throws IOException, Exception {
+    public static JsonElement post(String urlStr, String bodyStr) throws IOException, Exception {
 
         URL url = new URL(urlStr);
 
@@ -39,7 +39,7 @@ public class ApiClient {
                 .readTimeout(600, TimeUnit.SECONDS).writeTimeout(600, TimeUnit.SECONDS).build();
 
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType, reqStr);
+        RequestBody body = RequestBody.create(mediaType, bodyStr);
 
         Request request = new Request.Builder().url(url).post(body).addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json").build();

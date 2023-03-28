@@ -11,7 +11,7 @@ idExpr
     Id (Dot Id)*
     ;
 
-fnExpr: Id LeftParen (expr | jsonObj)? RightParen;
+fnExpr: Id LeftParen jsonObj? RightParen;
 
 baseExpr
     : idExpr
@@ -91,16 +91,16 @@ stmt
 assignStmt
     :   assign;
 
-nestStmt
-    :   LeftBrace stmt* RightBrace
-    ;
-
 condStmt
     :   If expr nestStmt (Elif expr nestStmt)? (Else nestStmt)?
     ;
 
 iterStmt
     :   For Id In idExpr nestStmt
+    ;
+
+nestStmt
+    :   LeftBrace stmt* RightBrace
     ;
 
 script

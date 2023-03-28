@@ -127,12 +127,6 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAssignStmt(DomsaScriptParser.AssignStmtContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#nestStmt}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNestStmt(DomsaScriptParser.NestStmtContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#condStmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -144,6 +138,12 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitIterStmt(DomsaScriptParser.IterStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DomsaScriptParser#nestStmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNestStmt(DomsaScriptParser.NestStmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#script}.
 	 * @param ctx the parse tree

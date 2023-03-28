@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,15 +46,23 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     public JsonElement visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
 
         String fnName = ctx.Id().getText();
+        var fnArgJsonObj = ctx.jsonObj();
 
         if (fnName.equals("sql")) {
-            var exprRes = this.visitExpr(ctx.expr());
-            if (exprRes.getAsString().contains("select")) {
+            if (fnArgJsonObj == null) {
+                // TODO
+            }
+
+            var fnArgJsonObjRes = this.visitJsonObj(fnArgJsonObj).getAsJsonObject();
+
+            var queryStr = fnArgJsonObjRes.get("query").getAsString();
+
+            if (queryStr.contains("select")) {
                 var arr = new JsonArray();
 
                 ResultSet sqlRes = null;
                 try {
-                    sqlRes = SqlClient.execQuery(exprRes.getAsString());
+                    sqlRes = SqlClient.execQuery(queryStr);
                     var cols = sqlRes.getMetaData();
                     while(sqlRes.next()) {
                         var obj = new JsonObject();
@@ -73,7 +82,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                 var obj = new JsonObject();
 
                 try {
-                    int rowsAffected = SqlClient.exec(exprRes.getAsString());
+                    int rowsAffected = SqlClient.exec(queryStr);
                     obj.add("rowsAffected", new JsonPrimitive(rowsAffected));
                 } catch (SQLException sqlException) {
                     // TODO
@@ -84,11 +93,17 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             }
 
         } else if (fnName.equals("get")) {
-            var exprRes = this.visitExpr(ctx.expr());
+            if (fnArgJsonObj == null) {
+                // TODO
+            }
+
+            var fnArgJsonObjRes = this.visitJsonObj(fnArgJsonObj).getAsJsonObject();
+
+            var urlStr = fnArgJsonObjRes.get("url").getAsString();
 
             JsonElement elem = null;
             try {
-                elem = ApiClient.get(exprRes.getAsString());
+                elem = ApiClient.get(urlStr);
             } catch (Exception e) {
                 // TODO
             }
@@ -96,7 +111,25 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return elem;
 
         } else if (fnName.equals("post")) {
-            return null;
+            if (fnArgJsonObj == null) {
+                // TODO
+            }
+
+            var fnArgJsonObjRes = this.visitJsonObj(fnArgJsonObj).getAsJsonObject();
+
+            var urlStr = fnArgJsonObjRes.get("url").getAsString();
+            var bodyStr = fnArgJsonObjRes.get("body").getAsString();
+
+            JsonElement elem = null;
+            try {
+                elem = ApiClient.post(urlStr, bodyStr);
+            } catch (Exception e) {
+                // TODO
+            }
+
+            return elem;
+        } else if (fnName.equals("date")) {
+            return new JsonPrimitive(new Date().toString());
         } else {
             return null;
         }
@@ -409,15 +442,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public Object visitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
-        Object stmtRes = null;
-        for (var stmt : ctx.stmt()) {
-            stmtRes = this.visitStmt(stmt);
-        }
-        return stmtRes;
-    }
-
-    @Override
     public Object visitCondStmt(DomsaScriptParser.CondStmtContext ctx) {
 
         for (int exprIdx = 0; exprIdx < ctx.expr().size(); exprIdx++) {
@@ -447,6 +471,15 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         }
 
         return null;
+    }
+
+    @Override
+    public Object visitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
+        Object stmtRes = null;
+        for (var stmt : ctx.stmt()) {
+            stmtRes = this.visitStmt(stmt);
+        }
+        return stmtRes;
     }
 
     @Override
