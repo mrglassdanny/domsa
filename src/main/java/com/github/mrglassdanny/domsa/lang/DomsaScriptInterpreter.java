@@ -1,5 +1,6 @@
 package com.github.mrglassdanny.domsa.lang;
 
+import com.github.mrglassdanny.domsa.api.ApiClient;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
@@ -83,7 +84,17 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             }
 
         } else if (fnName.equals("get")) {
-            return null;
+            var exprRes = this.visitExpr(ctx.expr());
+
+            JsonElement elem = null;
+            try {
+                elem = ApiClient.get(exprRes.getAsString());
+            } catch (Exception e) {
+                // TODO
+            }
+
+            return elem;
+
         } else if (fnName.equals("post")) {
             return null;
         } else {
@@ -427,13 +438,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     public Object visitIterStmt(DomsaScriptParser.IterStmtContext ctx) {
         // Only support for loop
 
-        var iterName = ctx.Id(0).getText();
-        var listName = ctx.Id(1).getText();
-
-        var arr = this.variables.get(listName).getAsJsonArray();
+        var iter = ctx.Id().getText();
+        var arr = this.visitIdExpr(ctx.idExpr()).getAsJsonArray();
 
         for (var elem : arr) {
-            this.variables.put(iterName, elem);
+            this.variables.put(iter, elem);
             this.visitNestStmt(ctx.nestStmt());
         }
 

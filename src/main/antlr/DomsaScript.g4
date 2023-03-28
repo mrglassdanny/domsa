@@ -11,7 +11,7 @@ idExpr
     Id (Dot Id)*
     ;
 
-fnExpr: Id LeftParen expr? RightParen;
+fnExpr: Id LeftParen (expr | jsonObj)? RightParen;
 
 baseExpr
     : idExpr
@@ -100,7 +100,7 @@ condStmt
     ;
 
 iterStmt
-    :   For Id In Id nestStmt
+    :   For Id In idExpr nestStmt
     ;
 
 script
