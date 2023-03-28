@@ -10,8 +10,8 @@ public class SqlClient {
 
     private static Connection conn;
 
-    public static void init(String dbPath) throws SQLException {
-        conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+    public static void init(String url) throws SQLException {
+        conn = DriverManager.getConnection(url);
     }
 
     public static void close() throws SQLException {

@@ -97,12 +97,6 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAssignId(DomsaScriptParser.AssignIdContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#assignValue}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAssignValue(DomsaScriptParser.AssignValueContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#assign}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

@@ -5,14 +5,23 @@ import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.sql.SqlClient;
+import com.google.gson.JsonNull;
 import io.javalin.Javalin;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+import java.io.FileReader;
+import java.util.HashMap;
+import java.util.Properties;
+
 public class Main {
+
+    public static HashMap<String, String> envConfigs = new HashMap<>();
     public static void main(String[] args) throws Exception {
 
-        SqlClient.init("C:\\Users\\danie\\OneDrive\\Desktop\\domsa.db");
+        initConfigs();
+
+        initComponents();
 
         var app = Javalin.create(/*config*/)
                 .get("/", ctx -> ctx.result("domsa v0.0.1"))
@@ -25,14 +34,31 @@ public class Main {
                     new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
             var scriptCtx = parser.script();
             var interp = new DomsaScriptInterpreter();
-            interp.visitScript(scriptCtx);
-
-            ctx.result(interp.variables.get("_res").toString());
+            var _res = interp.visitScript(scriptCtx);
+            ctx.result(_res == null ? JsonNull.INSTANCE.toString() : _res.toString());
 
             ctx.contentType("application/json");
             ctx.status(200);
         });
+    }
 
-        // SqlClient.close();
+    private static void initConfigs() throws Exception {
+        String envFilePath = "environment.properties";
+        FileReader reader = new FileReader((envFilePath));
+
+        Properties props = new Properties();
+        props.load(reader);
+
+        envConfigs.put("databaseUrl", props.getProperty("databaseUrl"));
+
+        reader.close();
+    }
+
+    private static void initComponents() throws Exception {
+        SqlClient.init(envConfigs.get("databaseUrl"));
+    }
+
+    private static void cleanupComponents() throws Exception {
+        SqlClient.close();
     }
 }

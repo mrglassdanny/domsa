@@ -66,13 +66,7 @@ assignId
     Id (Dot Id)*
     ;
 
-assignValue
-    : expr
-    | jsonArr
-    | jsonObj
-    ;
-
-assign: assignId Assign assignValue;
+assign: assignId Assign (expr | jsonArr | jsonObj);
 
 // FLOW ------------------------------------------------------------------------------------
 
@@ -181,7 +175,7 @@ Digit
     ;
 
 FormatString
-   : '`' (SafeCodePoint)* '`'
+   : '`' ('\\`' | ~'`')* '`'
    ;
 
 String

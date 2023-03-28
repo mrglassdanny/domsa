@@ -19,12 +19,14 @@ import java.util.regex.Pattern;
 
 public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
-    private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\$\\{.*?}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\{.*?}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern SQL_SELECT_PATTERN = Pattern.compile("select", Pattern.CASE_INSENSITIVE);
 
-    public HashMap<String, JsonElement> variables; // TODO
+    private HashMap<String, JsonElement> variables;
 
     public DomsaScriptInterpreter() {
         this.variables = new HashMap<>(10);
+        this.variables.put("_res", new JsonObject());
     }
 
     @Override
@@ -35,9 +37,14 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.variables.getOrDefault(ctx.getText(), null);
         } else {
             var obj = this.variables.get(ctx.Id(0).getText());
-            for (int dotIdx = 0, idIdx = 1; dotIdx < ctx.Dot().size() - 1; dotIdx++, idIdx++) {
+            for (int dotIdx = 0, idIdx = 1; dotIdx < ctx.Dot().size() - 1 && obj != null; dotIdx++, idIdx++) {
                 obj = obj.getAsJsonObject().get(ctx.Id(idIdx).getText());
             }
+
+            if (obj == null) {
+                return JsonNull.INSTANCE;
+            }
+
             return obj.getAsJsonObject().get(ctx.Id(ctx.Id().size() - 1).getText());
         }
     }
@@ -56,8 +63,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             var fnArgJsonObjRes = this.visitJsonObj(fnArgJsonObj).getAsJsonObject();
 
             var queryStr = fnArgJsonObjRes.get("query").getAsString();
+            Matcher selectMatcher = SQL_SELECT_PATTERN.matcher(queryStr);
 
-            if (queryStr.contains("select")) {
+            if (selectMatcher.find()) {
                 var arr = new JsonArray();
 
                 ResultSet sqlRes = null;
@@ -68,7 +76,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                         var obj = new JsonObject();
                         for (int colIdx = 1; colIdx <= cols.getColumnCount(); colIdx++) {
                             var col = cols.getColumnName(colIdx);
-                            obj.add(col, new JsonPrimitive(sqlRes.getObject(colIdx).toString()));
+                            if (sqlRes.getObject(colIdx) != null) {
+                                obj.add(col, new JsonPrimitive(sqlRes.getObject(colIdx).toString()));
+                            } else {
+                                obj.add(col, JsonNull.INSTANCE);
+                            }
+
                         }
                         arr.add(obj);
                     }
@@ -131,7 +144,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         } else if (fnName.equals("date")) {
             return new JsonPrimitive(new Date().toString());
         } else {
-            return null;
+            return JsonNull.INSTANCE;
         }
     }
 
@@ -153,7 +166,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             Matcher matcher = FORMAT_STRING_PATTERN.matcher(ctx.FormatString().getText());
             while(matcher.find()) {
                 String matchStr = matcher.group();
-                String exprStr = matchStr.substring(2, matchStr.length() - 1);
+                String exprStr = matchStr.substring(1, matchStr.length() - 1);
                 var parser = new DomsaScriptParser(
                         new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(exprStr))));
                 var exprCtx = parser.expr();
@@ -166,7 +179,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         } else if (ctx.False() != null) {
             return new JsonPrimitive(false);
         } else {
-            return null;
+            return JsonNull.INSTANCE;
         }
     }
 
@@ -334,13 +347,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public JsonElement visitJsonPair(DomsaScriptParser.JsonPairContext ctx) {
-        var val = this.visitJsonValue(ctx.jsonValue());
-        this.variables.put(ctx.Id().getText(), val);
-        return val;
-    }
-
-    @Override
     public JsonElement visitJsonArr(DomsaScriptParser.JsonArrContext ctx) {
 
         var arr = new JsonArray(ctx.jsonValue().size());
@@ -377,21 +383,15 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             var obj = this.variables.get(ctx.Id(0).getText());
             int dotIdx = 0;
             int idIdx = 1;
-            for (; dotIdx < ctx.Dot().size() - 1; dotIdx++, idIdx++) {
+            for (; dotIdx < ctx.Dot().size() - 1 && obj != null; dotIdx++, idIdx++) {
                 obj = obj.getAsJsonObject().get(ctx.Id(idIdx).getText());
             }
-            return new AssignTuple(ctx.Id(idIdx).getText(), obj.getAsJsonObject());
-        }
-    }
 
-    @Override
-    public JsonElement visitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
-        if (ctx.expr() != null) {
-            return this.visitExpr(ctx.expr());
-        } else if (ctx.jsonArr() != null) {
-            return this.visitJsonArr(ctx.jsonArr());
-        } else {
-            return this.visitJsonObj(ctx.jsonObj());
+            if (obj == null) {
+                return new AssignTuple(ctx.Id(idIdx).getText(), JsonNull.INSTANCE);
+            }
+
+            return new AssignTuple(ctx.Id(idIdx).getText(), obj.getAsJsonObject());
         }
     }
 
@@ -401,20 +401,20 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         var tup = this.visitAssignId(ctx.assignId());
 
         if (tup.data == null) { // Not object expression
-            if (ctx.assignValue().expr() != null) {
-                this.variables.put(tup.name, this.visitExpr(ctx.assignValue().expr()));
-            } else if (ctx.assignValue().jsonArr() != null) {
-                this.variables.put(tup.name, this.visitJsonArr(ctx.assignValue().jsonArr()));
+            if (ctx.expr() != null) {
+                this.variables.put(tup.name, this.visitExpr(ctx.expr()));
+            } else if (ctx.jsonArr() != null) {
+                this.variables.put(tup.name, this.visitJsonArr(ctx.jsonArr()));
             } else {
-                this.variables.put(tup.name, this.visitJsonObj(ctx.assignValue().jsonObj()));
+                this.variables.put(tup.name, this.visitJsonObj(ctx.jsonObj()));
             }
         } else { // Object expression
-            if (ctx.assignValue().expr() != null) {
-                tup.data.getAsJsonObject().add(tup.name, this.visitExpr(ctx.assignValue().expr()));
-            } else if (ctx.assignValue().jsonArr() != null) {
-                tup.data.getAsJsonObject().add(tup.name, this.visitJsonArr(ctx.assignValue().jsonArr()));
+            if (ctx.expr() != null) {
+                tup.data.getAsJsonObject().add(tup.name, this.visitExpr(ctx.expr()));
+            } else if (ctx.jsonArr() != null) {
+                tup.data.getAsJsonObject().add(tup.name, this.visitJsonArr(ctx.jsonArr()));
             } else {
-                tup.data.getAsJsonObject().add(tup.name, this.visitJsonObj(ctx.assignValue().jsonObj()));
+                tup.data.getAsJsonObject().add(tup.name, this.visitJsonObj(ctx.jsonObj()));
             }
         }
 
@@ -470,6 +470,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             this.visitNestStmt(ctx.nestStmt());
         }
 
+        this.variables.remove(iter);
+
         return null;
     }
 
@@ -484,7 +486,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public Object visitScript(DomsaScriptParser.ScriptContext ctx) {
-        return super.visitScript(ctx);
+        Object stmtRes = null;
+        for (var stmt : ctx.stmt()) {
+            stmtRes = this.visitStmt(stmt);
+        }
+
+        return this.variables.get("_res");
     }
 
     static class AssignTuple {
@@ -496,7 +503,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             this.data = data;
         }
     }
-
 
     static class JsonHelper {
 
