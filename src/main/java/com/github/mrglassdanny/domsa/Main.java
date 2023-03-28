@@ -17,6 +17,7 @@ import java.util.Properties;
 public class Main {
 
     public static HashMap<String, String> envConfigs = new HashMap<>();
+
     public static void main(String[] args) throws Exception {
 
         initConfigs();

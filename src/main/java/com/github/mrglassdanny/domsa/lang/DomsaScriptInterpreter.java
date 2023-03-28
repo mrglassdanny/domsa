@@ -31,21 +31,26 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public JsonElement visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
-        // TODO
+
+        // Either dealing with regular id or id nested in object
 
         if (ctx.Dot().isEmpty()) {
-            return this.variables.getOrDefault(ctx.getText(), null);
+            return this.variables.getOrDefault(ctx.getText(), JsonNull.INSTANCE);
         } else {
             var obj = this.variables.get(ctx.Id(0).getText());
             for (int dotIdx = 0, idIdx = 1; dotIdx < ctx.Dot().size() - 1 && obj != null; dotIdx++, idIdx++) {
                 obj = obj.getAsJsonObject().get(ctx.Id(idIdx).getText());
             }
-
             if (obj == null) {
                 return JsonNull.INSTANCE;
             }
 
-            return obj.getAsJsonObject().get(ctx.Id(ctx.Id().size() - 1).getText());
+            var field = obj.getAsJsonObject().get(ctx.Id(ctx.Id().size() - 1).getText());
+            if (field == null) {
+                return JsonNull.INSTANCE;
+            }
+
+            return field;
         }
     }
 
@@ -485,7 +490,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public Object visitScript(DomsaScriptParser.ScriptContext ctx) {
+    public JsonElement visitScript(DomsaScriptParser.ScriptContext ctx) {
         Object stmtRes = null;
         for (var stmt : ctx.stmt()) {
             stmtRes = this.visitStmt(stmt);
