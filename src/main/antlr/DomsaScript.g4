@@ -84,7 +84,6 @@ stmt
     |   assignStmt
     |   condStmt
     |   iterStmt
-    |   retStmt
     |   eos)
       eos?
     ;
@@ -101,37 +100,24 @@ condStmt
     ;
 
 iterStmt
-    :   Loop nestStmt
-    |   While expr nestStmt
-    |   For Id In Id nestStmt
+    :   For Id In Id nestStmt
     ;
-
-retStmt
-    : Return expr;
 
 script
     :   stmt* EOF
     ;
 
 
-
 // TOKENS ------------------------------------------------------------------------------------
 
-Break : 'break';
-Case : 'case';
-Default: 'default';
 Elif: 'elif';
 Else : 'else';
 False: 'false';
 For : 'for';
 If : 'if';
 In : 'in';
-Loop: 'loop';
 Null: 'null';
-Return : 'return';
-Switch : 'switch';
 True: 'true';
-While: 'while';
 
 LeftParen : '(';
 RightParen : ')';
@@ -146,9 +132,7 @@ Greater : '>';
 GreaterEqual : '>=';
 
 Plus : '+';
-PlusPlus : '++';
 Minus : '-';
-MinusMinus : '--';
 Star : '*';
 Div : '/';
 Mod : '%';

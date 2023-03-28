@@ -50,7 +50,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             if (exprRes.getAsString().contains("select")) {
                 var arr = new JsonArray();
 
-
                 ResultSet sqlRes = null;
                 try {
                     sqlRes = SqlClient.execQuery(exprRes.getAsString());
@@ -65,10 +64,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                     }
                     sqlRes.close();
                 } catch (SQLException sqlException) {
-                    // TODO
-                    var obj = new JsonObject();
-                    obj.add("message", new JsonPrimitive(sqlException.getMessage()));
-                    return obj;
+                    // TODO: log msg
                 }
 
                 return arr;
@@ -80,7 +76,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                     obj.add("rowsAffected", new JsonPrimitive(rowsAffected));
                 } catch (SQLException sqlException) {
                     // TODO
-                    obj.add("message", new JsonPrimitive(sqlException.getMessage()));
+                    obj.add("msg", new JsonPrimitive(sqlException.getMessage()));
                 }
 
                 return obj;
@@ -327,8 +323,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public AssignTuple visitAssignId(DomsaScriptParser.AssignIdContext ctx) {
 
-        // If not object expression: return name of variable to be inserted into variables map later.
-        // If object expression: return name and parent object.
+        // If not object expression: return name of variable to be inserted into variables map later
+        // If object expression: return name and parent object
 
         if (ctx.Dot().isEmpty()) {
             return new AssignTuple(ctx.getText(), null);
@@ -360,7 +356,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         var tup = this.visitAssignId(ctx.assignId());
 
-
         if (tup.data == null) { // Not object expression
             if (ctx.assignValue().expr() != null) {
                 this.variables.put(tup.name, this.visitExpr(ctx.assignValue().expr()));
@@ -380,11 +375,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         }
 
         return null;
-    }
-
-    @Override
-    public Object visitEos(DomsaScriptParser.EosContext ctx) {
-        return super.visitEos(ctx);
     }
 
     @Override
@@ -423,7 +413,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
             var res = this.visitExpr(ctx.expr(exprIdx));
 
-            // Looking for successful conditional test or the else.
+            // Looking for successful conditional test or the else
             if (res.getAsBoolean() || (exprIdx == ctx.expr().size() - 1 && ctx.Else() != null)) {
                 this.visitNestStmt(ctx.nestStmt(exprIdx));
                 break;
@@ -435,25 +425,19 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public Object visitIterStmt(DomsaScriptParser.IterStmtContext ctx) {
+        // Only support for loop
 
-        if (ctx.For() != null) {
-            var iterName = ctx.Id(0).getText();
-            var listName = ctx.Id(1).getText();
+        var iterName = ctx.Id(0).getText();
+        var listName = ctx.Id(1).getText();
 
-            var arr = this.variables.get(listName).getAsJsonArray();
+        var arr = this.variables.get(listName).getAsJsonArray();
 
-            for (var elem : arr) {
-                this.variables.put(iterName, elem);
-                this.visitNestStmt(ctx.nestStmt());
-            }
+        for (var elem : arr) {
+            this.variables.put(iterName, elem);
+            this.visitNestStmt(ctx.nestStmt());
         }
 
         return null;
-    }
-
-    @Override
-    public Object visitRetStmt(DomsaScriptParser.RetStmtContext ctx) {
-        return super.visitRetStmt(ctx);
     }
 
     @Override
