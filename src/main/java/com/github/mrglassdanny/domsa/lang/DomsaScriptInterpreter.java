@@ -627,14 +627,17 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             // Throws exception if a or b is array/object
             // Otherwise compares primitives as strings/handles nulls
 
-            if (a.isJsonNull() && b.isJsonNull()) {
-                return 0;
-            }
-            if (a.isJsonNull()) {
-                return -1;
-            }
-            if (b.isJsonNull()) {
-                return 1;
+            if (a.isJsonNull() || b.isJsonNull()) {
+                if (a.isJsonNull() && b.isJsonNull()) {
+                    return 0;
+                } else {
+                    if (a.isJsonNull()) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                }
+
             }
 
             if (a.isJsonPrimitive() && b.isJsonPrimitive()) {
