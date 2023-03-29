@@ -625,6 +625,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         public static int compare(JsonElement a, JsonElement b) {
 
             // Throws exception if a or b is array/object
+            // Otherwise compares primitives as strings/handles nulls
 
             if (a.isJsonNull() && b.isJsonNull()) {
                 return 0;
