@@ -1,4 +1,4 @@
-package com.github.mrglassdanny.domsa.api;
+package com.github.mrglassdanny.domsa.client;
 import java.io.IOException;
 
 import java.net.URL;

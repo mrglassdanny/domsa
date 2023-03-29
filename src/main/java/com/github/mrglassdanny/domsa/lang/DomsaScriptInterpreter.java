@@ -1,18 +1,15 @@
 package com.github.mrglassdanny.domsa.lang;
 
-import com.github.mrglassdanny.domsa.api.ApiClient;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
-import com.github.mrglassdanny.domsa.sql.SqlClient;
+import com.github.mrglassdanny.domsa.lang.fn.DomsaFnRegistry;
 import com.google.gson.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ErrorNode;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -21,7 +18,6 @@ import java.util.regex.Pattern;
 public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\{.*?}", Pattern.CASE_INSENSITIVE);
-    private static final Pattern SQL_SELECT_PATTERN = Pattern.compile("select", Pattern.CASE_INSENSITIVE);
 
     Stack<HashMap<String, JsonElement>> scopes;
 
@@ -94,100 +90,22 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     public JsonElement visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
 
         String fnName = ctx.Id().getText();
-        var fnArgJsonObj = ctx.jsonObj();
-        boolean quitOnErr = ctx.Question() != null;
+        var req = this.visitJsonObj(ctx.jsonObj()).getAsJsonObject();
+        boolean catchErr = ctx.Question() != null;
 
-        if (fnName.equals("sql")) {
-            if (fnArgJsonObj == null) {
-                // TODO
+        var domsaFn = DomsaFnRegistry.fns.get(fnName);
+
+        if (domsaFn == null) {
+            return JsonNull.INSTANCE;
+        }
+
+        try {
+            return domsaFn.exec(req);
+        } catch (Exception fnException) {
+            if (!catchErr) {
+                throw new RuntimeException(fnException.getMessage());
             }
 
-            var fnArgJsonObjRes = this.visitJsonObj(fnArgJsonObj).getAsJsonObject();
-
-            var queryStr = fnArgJsonObjRes.get("query").getAsString();
-            Matcher selectMatcher = SQL_SELECT_PATTERN.matcher(queryStr);
-
-            if (selectMatcher.find()) {
-                var arr = new JsonArray();
-
-                ResultSet sqlRes = null;
-                try {
-                    sqlRes = SqlClient.execQuery(queryStr);
-                    var cols = sqlRes.getMetaData();
-                    while(sqlRes.next()) {
-                        var obj = new JsonObject();
-                        for (int colIdx = 1; colIdx <= cols.getColumnCount(); colIdx++) {
-                            var col = cols.getColumnName(colIdx);
-                            if (sqlRes.getObject(colIdx) != null) {
-                                obj.add(col, new JsonPrimitive(sqlRes.getObject(colIdx).toString()));
-                            } else {
-                                obj.add(col, JsonNull.INSTANCE);
-                            }
-
-                        }
-                        arr.add(obj);
-                    }
-                    sqlRes.close();
-                } catch (SQLException sqlException) {
-                    if (quitOnErr) {
-                        throw new RuntimeException("sql fn: " + sqlException.getMessage());
-                    }
-                }
-
-                return arr;
-            } else {
-                var obj = new JsonObject();
-
-                try {
-                    int rowsAffected = SqlClient.exec(queryStr);
-                    obj.add("rowsAffected", new JsonPrimitive(rowsAffected));
-                } catch (SQLException sqlException) {
-                    // TODO
-                    obj.add("msg", new JsonPrimitive(sqlException.getMessage()));
-                }
-
-                return obj;
-            }
-
-        } else if (fnName.equals("get")) {
-            if (fnArgJsonObj == null) {
-                // TODO
-            }
-
-            var fnArgJsonObjRes = this.visitJsonObj(fnArgJsonObj).getAsJsonObject();
-
-            var urlStr = fnArgJsonObjRes.get("url").getAsString();
-
-            JsonElement elem = null;
-            try {
-                elem = ApiClient.get(urlStr);
-            } catch (Exception e) {
-                // TODO
-            }
-
-            return elem;
-
-        } else if (fnName.equals("post")) {
-            if (fnArgJsonObj == null) {
-                // TODO
-            }
-
-            var fnArgJsonObjRes = this.visitJsonObj(fnArgJsonObj).getAsJsonObject();
-
-            var urlStr = fnArgJsonObjRes.get("url").getAsString();
-            var bodyStr = fnArgJsonObjRes.get("body").getAsString();
-
-            JsonElement elem = null;
-            try {
-                elem = ApiClient.post(urlStr, bodyStr);
-            } catch (Exception e) {
-                // TODO
-            }
-
-            return elem;
-        } else if (fnName.equals("date")) {
-            return new JsonPrimitive(new Date().toString());
-        } else {
             return JsonNull.INSTANCE;
         }
     }
@@ -418,7 +336,15 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     public AssignTuple visitAssignId(DomsaScriptParser.AssignIdContext ctx) {
 
         if (ctx.Dot().isEmpty()) { // non object field
-            return new AssignTuple(ctx.getText(), this.getVariable(ctx.getText()));
+
+            var id = ctx.getText();
+            if (id.equals("res")) {
+                throw new RuntimeException("'res' is immutable");
+            } else if (id.equals("req")) {
+                throw new RuntimeException("'req' is immutable");
+            }
+
+            return new AssignTuple(id, this.getVariable(ctx.getText()));
         } else { // object field
 
             /*
@@ -555,14 +481,14 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public JsonElement visitScript(DomsaScriptParser.ScriptContext ctx) {
+    public JsonObject visitScript(DomsaScriptParser.ScriptContext ctx) {
         Object stmtRes = null;
 
         for (var stmt : ctx.stmt()) {
             stmtRes = this.visitStmt(stmt);
         }
 
-        return this.getVariable("res");
+        return this.getVariable("res").getAsJsonObject();
     }
 
     static class AssignTuple {

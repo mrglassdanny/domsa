@@ -11,7 +11,7 @@ idExpr
     Id (Dot Id)*
     ;
 
-fnExpr: Id LeftParen jsonObj? RightParen Question?;
+fnExpr: Id LeftParen jsonObj RightParen Question?;
 
 baseExpr
     : idExpr

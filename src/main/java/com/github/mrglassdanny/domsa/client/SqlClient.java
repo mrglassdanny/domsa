@@ -1,4 +1,4 @@
-package com.github.mrglassdanny.domsa.sql;
+package com.github.mrglassdanny.domsa.client;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
