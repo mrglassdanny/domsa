@@ -159,6 +159,13 @@ public class DomsaScriptBaseVisitor<T> extends AbstractParseTreeVisitor<T> imple
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitFnStmt(DomsaScriptParser.FnStmtContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitNestStmt(DomsaScriptParser.NestStmtContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

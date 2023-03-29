@@ -78,6 +78,7 @@ stmt
     |   assignStmt
     |   condStmt
     |   iterStmt
+    |   fnStmt
     |   eos)
       eos?
     ;
@@ -91,6 +92,10 @@ condStmt
 
 iterStmt
     :   For Id In idExpr nestStmt
+    ;
+
+fnStmt
+    : fnExpr
     ;
 
 nestStmt

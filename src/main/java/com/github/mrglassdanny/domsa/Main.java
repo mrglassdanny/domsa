@@ -5,7 +5,9 @@ import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.sql.SqlClient;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 import io.javalin.Javalin;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -33,9 +35,17 @@ public class Main {
 
             var parser = new DomsaScriptParser(
                     new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
-            var scriptCtx = parser.script();
             var interp = new DomsaScriptInterpreter();
-            var _res = interp.visitScript(scriptCtx);
+
+            JsonElement _res = null;
+
+            try {
+                _res = interp.visitScript(parser.script());
+            } catch (Exception interpException) {
+                _res = new JsonObject();
+                _res.getAsJsonObject().addProperty("errmsg", interpException.getMessage());
+            }
+
             ctx.result(_res == null ? JsonNull.INSTANCE.toString() : _res.toString());
 
             ctx.contentType("application/json");

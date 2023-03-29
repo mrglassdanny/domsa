@@ -133,6 +133,12 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIterStmt(DomsaScriptParser.IterStmtContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DomsaScriptParser#fnStmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFnStmt(DomsaScriptParser.FnStmtContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#nestStmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

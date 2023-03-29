@@ -436,6 +436,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitCondStmt(ctx.condStmt());
         } else if (ctx.iterStmt() != null) {
             return this.visitIterStmt(ctx.iterStmt());
+        } else if (ctx.fnStmt() != null) {
+            return this.visitFnStmt(ctx.fnStmt());
         }
 
         return null;
@@ -478,6 +480,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         this.variables.remove(iter);
 
         return null;
+    }
+
+    @Override
+    public Object visitFnStmt(DomsaScriptParser.FnStmtContext ctx) {
+        return this.visitFnExpr(ctx.fnExpr());
     }
 
     @Override
