@@ -87,7 +87,7 @@ assignStmt
     :   assign;
 
 condStmt
-    :   If expr nestStmt (Elif expr nestStmt)? (Else nestStmt)?
+    :   If expr nestStmt (Elif expr nestStmt)* (Else nestStmt)?
     ;
 
 iterStmt

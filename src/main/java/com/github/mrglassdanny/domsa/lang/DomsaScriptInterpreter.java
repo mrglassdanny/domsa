@@ -575,23 +575,43 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     static class JsonHelper {
 
         public static JsonElement mul(JsonElement a, JsonElement b) {
-            return new JsonPrimitive(a.getAsDouble() * b.getAsDouble());
+            try {
+                return new JsonPrimitive(a.getAsDouble() * b.getAsDouble());
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid operation: " + a.toString() + " * " + b.toString());
+            }
         }
 
         public static JsonElement div(JsonElement a, JsonElement b) {
-            return new JsonPrimitive(a.getAsDouble() / b.getAsDouble());
+            try {
+                return new JsonPrimitive(a.getAsDouble() / b.getAsDouble());
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid operation: " + a.toString() + " / " + b.toString());
+            }
         }
 
         public static JsonElement mod(JsonElement a, JsonElement b) {
-            return new JsonPrimitive(a.getAsDouble() % b.getAsDouble());
+            try {
+                return new JsonPrimitive(a.getAsDouble() % b.getAsDouble());
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid operation: " + a.toString() + " % " + b.toString());
+            }
         }
 
         public static JsonElement add(JsonElement a, JsonElement b) {
-            return new JsonPrimitive(a.getAsDouble() + b.getAsDouble());
+            try {
+                return new JsonPrimitive(a.getAsDouble() + b.getAsDouble());
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid operation: " + a.toString() + " + " + b.toString());
+            }
         }
 
         public static JsonElement sub(JsonElement a, JsonElement b) {
-            return new JsonPrimitive(a.getAsDouble() - b.getAsDouble());
+            try {
+                return new JsonPrimitive(a.getAsDouble() - b.getAsDouble());
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid operation: " + a.toString() + " - " + b.toString());
+            }
         }
 
         public static boolean equals(JsonElement a, JsonElement b) {
@@ -603,35 +623,22 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         }
 
         public static int compare(JsonElement a, JsonElement b) {
-            if (a.isJsonPrimitive() && b.isJsonPrimitive()) {
-                try {
-                    var aVal = a.getAsDouble();
-                    var bVal = b.getAsDouble();
-                    return Double.compare(aVal, bVal);
-                } catch (Exception numException) {
-                    try {
-                        var aVal = a.getAsString();
-                        var bVal = b.getAsString();
-                        return aVal.compareTo(bVal);
-                    } catch (Exception strException) {
-                        try {
-                            var aVal = a.getAsBoolean();
-                            var bVal = b.getAsBoolean();
-                            return Boolean.compare(aVal, bVal);
-                        } catch (Exception boolException) {
-                            // TODO
-                            return 0;
-                        }
-                    }
-                }
-            } else {
-                // TODO
+
+            if (a.isJsonNull() && b.isJsonNull()) {
                 return 0;
             }
-        }
+            if (a.isJsonNull()) {
+                return -1;
+            }
+            if (b.isJsonNull()) {
+                return 1;
+            }
 
-        public static boolean isVariable(JsonElement a) {
-            return a != null && !a.isJsonNull() && !a.isJsonObject() && !a.isJsonArray() && !a.isJsonPrimitive();
+            if (a.isJsonPrimitive() && b.isJsonPrimitive()) {
+                return a.getAsString().compareTo(b.getAsString());
+            } else {
+                throw new RuntimeException("Invalid comparison: " + a.toString() + " and " + b.toString());
+            }
         }
     }
 }
