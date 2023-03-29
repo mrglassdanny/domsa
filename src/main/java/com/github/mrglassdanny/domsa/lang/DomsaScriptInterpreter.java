@@ -95,6 +95,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         String fnName = ctx.Id().getText();
         var fnArgJsonObj = ctx.jsonObj();
+        boolean quitOnErr = ctx.Question() != null;
 
         if (fnName.equals("sql")) {
             if (fnArgJsonObj == null) {
@@ -128,7 +129,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                     }
                     sqlRes.close();
                 } catch (SQLException sqlException) {
-                    // TODO: log msg
+                    if (quitOnErr) {
+                        throw new RuntimeException("sql fn: " + sqlException.getMessage());
+                    }
                 }
 
                 return arr;

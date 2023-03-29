@@ -11,7 +11,7 @@ idExpr
     Id (Dot Id)*
     ;
 
-fnExpr: Id LeftParen jsonObj? RightParen;
+fnExpr: Id LeftParen jsonObj? RightParen Question?;
 
 baseExpr
     : idExpr
@@ -138,7 +138,7 @@ Mod : '%';
 
 And : 'and';
 Or : 'or';
-Not : '!';
+Not : '!'; // TODO
 
 Question : '?';
 Colon : ':';
