@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,22 +23,57 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\{.*?}", Pattern.CASE_INSENSITIVE);
     private static final Pattern SQL_SELECT_PATTERN = Pattern.compile("select", Pattern.CASE_INSENSITIVE);
 
-    private HashMap<String, JsonElement> variables;
+    Stack<HashMap<String, JsonElement>> scopes;
 
     public DomsaScriptInterpreter() {
-        this.variables = new HashMap<>(10);
-        this.variables.put("_res", new JsonObject());
+        this.scopes = new Stack<>();
+
+        // Main scope
+        var mainScopeVariables = new HashMap<String, JsonElement>(2);
+        mainScopeVariables.put("req", new JsonObject());
+        mainScopeVariables.put("res", new JsonObject());
+        this.scopes.push(mainScopeVariables);
+    }
+
+    private HashMap<String, JsonElement> getScope(String name) {
+        // Purposely starting search at highest level scope
+        for (int scopeIdx = this.scopes.size() - 1; scopeIdx >= 0; scopeIdx--) {
+            var scope = this.scopes.get(scopeIdx);
+            if (scope.containsKey(name)) {
+                return scope;
+            }
+        }
+
+        return null;
+    }
+
+    private JsonElement getVariable(String name) {
+
+        // Purposely starting search at highest level scope
+        for (int scopeIdx = this.scopes.size() - 1; scopeIdx >= 0; scopeIdx--) {
+            var scope = this.scopes.get(scopeIdx);
+            if (scope.containsKey(name)) {
+                return scope.get(name);
+            }
+        }
+
+        return null;
+    }
+
+    private void putVariable(String name, JsonElement data) {
+        this.scopes.peek().put(name, data);
     }
 
     @Override
     public JsonElement visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
 
-        // Either dealing with regular id or id nested in object
+        // Either dealing with Id (non object field) or Id within object (object field)
 
-        if (ctx.Dot().isEmpty()) {
-            return this.variables.getOrDefault(ctx.getText(), JsonNull.INSTANCE);
-        } else {
-            var obj = this.variables.get(ctx.Id(0).getText());
+        if (ctx.Dot().isEmpty()) { // non object field
+            var val = this.getVariable(ctx.getText());
+            return val != null ? val : JsonNull.INSTANCE;
+        } else { // object field
+            var obj = this.getVariable(ctx.Id(0).getText());
             for (int dotIdx = 0, idIdx = 1; dotIdx < ctx.Dot().size() - 1 && obj != null; dotIdx++, idIdx++) {
                 obj = obj.getAsJsonObject().get(ctx.Id(idIdx).getText());
             }
@@ -45,12 +81,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                 return JsonNull.INSTANCE;
             }
 
-            var field = obj.getAsJsonObject().get(ctx.Id(ctx.Id().size() - 1).getText());
-            if (field == null) {
+            var val = obj.getAsJsonObject().get(ctx.Id(ctx.Id().size() - 1).getText());
+            if (val == null) {
                 return JsonNull.INSTANCE;
             }
 
-            return field;
+            return val;
         }
     }
 
@@ -378,22 +414,36 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public AssignTuple visitAssignId(DomsaScriptParser.AssignIdContext ctx) {
 
-        // If not object expression: return name of variable to be inserted into variables map later
-        // If object expression: return name and parent object
+        if (ctx.Dot().isEmpty()) { // non object field
+            return new AssignTuple(ctx.getText(), this.getVariable(ctx.getText()));
+        } else { // object field
 
-        if (ctx.Dot().isEmpty()) {
-            return new AssignTuple(ctx.getText(), null);
-        } else {
-            // TODO: if obj is null at any point we have a problem
-            var obj = this.variables.get(ctx.Id(0).getText());
-            int dotIdx = 0;
-            int idIdx = 1;
-            for (; dotIdx < ctx.Dot().size() - 1 && obj != null; dotIdx++, idIdx++) {
-                obj = obj.getAsJsonObject().get(ctx.Id(idIdx).getText());
-            }
+            /*
+                Behavior here is to create objects as necessary until we get to the Id being assigned
+                    Ex: a.b.c.d where only a actually exists
+                        We create object a.b, then object a.b.c, then return c to caller
+                        for d assignment
+             */
+
+
+            var obj = this.getVariable(ctx.Id(0).getText());
 
             if (obj == null) {
-                return new AssignTuple(ctx.Id(idIdx).getText(), JsonNull.INSTANCE);
+                obj = new JsonObject();
+                this.putVariable(ctx.Id(0).getText(), obj);
+            }
+
+            int dotIdx = 0;
+            int idIdx = 1;
+            for (; dotIdx < ctx.Dot().size() - 1; dotIdx++, idIdx++) {
+                var subObj = obj.getAsJsonObject().get(ctx.Id(idIdx).getText());
+
+                if (subObj == null) {
+                    subObj = new JsonObject();
+                    obj.getAsJsonObject().add(ctx.Id(idIdx).getText(), subObj);
+                }
+
+                obj = subObj;
             }
 
             return new AssignTuple(ctx.Id(idIdx).getText(), obj.getAsJsonObject());
@@ -405,21 +455,22 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         var tup = this.visitAssignId(ctx.assignId());
 
-        if (tup.data == null) { // Not object expression
-            if (ctx.expr() != null) {
-                this.variables.put(tup.name, this.visitExpr(ctx.expr()));
-            } else if (ctx.jsonArr() != null) {
-                this.variables.put(tup.name, this.visitJsonArr(ctx.jsonArr()));
+        JsonElement data;
+        if (ctx.expr() != null) {
+            data = this.visitExpr(ctx.expr());
+        } else if (ctx.jsonArr() != null) {
+            data = this.visitJsonArr(ctx.jsonArr());
+        } else {
+            data = this.visitJsonObj(ctx.jsonObj());
+        }
+
+        if (tup.data == null) { // Means non object field does not exist in any scope
+            this.putVariable(tup.name, data);
+        } else { // previously existed or now exists in scope
+            if (tup.data.isJsonObject()) {
+                tup.data.getAsJsonObject().add(tup.name, data);
             } else {
-                this.variables.put(tup.name, this.visitJsonObj(ctx.jsonObj()));
-            }
-        } else { // Object expression
-            if (ctx.expr() != null) {
-                tup.data.getAsJsonObject().add(tup.name, this.visitExpr(ctx.expr()));
-            } else if (ctx.jsonArr() != null) {
-                tup.data.getAsJsonObject().add(tup.name, this.visitJsonArr(ctx.jsonArr()));
-            } else {
-                tup.data.getAsJsonObject().add(tup.name, this.visitJsonObj(ctx.jsonObj()));
+                this.getScope(tup.name).put(tup.name, data);
             }
         }
 
@@ -429,7 +480,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public Object visitStmt(DomsaScriptParser.StmtContext ctx) {
         if (ctx.nestStmt() != null) {
-            return this.visitNestStmt(ctx.nestStmt());
+            this.scopes.push(new HashMap<>());
+            this.visitNestStmt(ctx.nestStmt());
+            this.scopes.pop();
         } else if (ctx.assignStmt() != null) {
             return this.visitAssignStmt(ctx.assignStmt());
         } else if (ctx.condStmt() != null) {
@@ -457,7 +510,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
             // Looking for successful conditional test or the else
             if (res.getAsBoolean() || (exprIdx == ctx.expr().size() - 1 && ctx.Else() != null)) {
+                this.scopes.push(new HashMap<>());
                 this.visitNestStmt(ctx.nestStmt(exprIdx));
+                this.scopes.pop();
                 break;
             }
         }
@@ -473,11 +528,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         var arr = this.visitIdExpr(ctx.idExpr()).getAsJsonArray();
 
         for (var elem : arr) {
-            this.variables.put(iter, elem);
+            this.scopes.push(new HashMap<>());
+            this.putVariable(iter, elem);
             this.visitNestStmt(ctx.nestStmt());
+            this.scopes.pop();
         }
-
-        this.variables.remove(iter);
 
         return null;
     }
@@ -499,11 +554,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public JsonElement visitScript(DomsaScriptParser.ScriptContext ctx) {
         Object stmtRes = null;
+
         for (var stmt : ctx.stmt()) {
             stmtRes = this.visitStmt(stmt);
         }
 
-        return this.variables.get("_res");
+        return this.getVariable("res");
     }
 
     static class AssignTuple {
@@ -554,15 +610,15 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                     return Double.compare(aVal, bVal);
                 } catch (Exception numException) {
                     try {
-                        var aVal = a.getAsBoolean();
-                        var bVal = b.getAsBoolean();
-                        return Boolean.compare(aVal, bVal);
-                    } catch (Exception boolException) {
+                        var aVal = a.getAsString();
+                        var bVal = b.getAsString();
+                        return aVal.compareTo(bVal);
+                    } catch (Exception strException) {
                         try {
-                            var aVal = a.getAsString();
-                            var bVal = b.getAsString();
-                            return aVal.compareTo(bVal);
-                        } catch (Exception strException) {
+                            var aVal = a.getAsBoolean();
+                            var bVal = b.getAsBoolean();
+                            return Boolean.compare(aVal, bVal);
+                        } catch (Exception boolException) {
                             // TODO
                             return 0;
                         }
