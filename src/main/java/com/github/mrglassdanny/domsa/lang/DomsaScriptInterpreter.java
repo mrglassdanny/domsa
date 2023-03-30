@@ -454,7 +454,13 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         // Only support for loop
 
         var iter = ctx.Id().getText();
-        var arr = this.visitIdExpr(ctx.idExpr()).getAsJsonArray();
+
+        var idExprRes = this.visitIdExpr(ctx.idExpr());
+        if (!idExprRes.isJsonArray()) {
+            throw new RuntimeException("'" + ctx.idExpr().getText() + "' is not an array");
+        }
+
+        var arr = idExprRes.getAsJsonArray();
 
         for (var elem : arr) {
             this.scopes.push(new HashMap<>());
