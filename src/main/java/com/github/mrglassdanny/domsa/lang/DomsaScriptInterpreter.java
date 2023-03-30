@@ -3,11 +3,13 @@ package com.github.mrglassdanny.domsa.lang;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
-import com.github.mrglassdanny.domsa.lang.fn.DomsaFnRegistry;
+import com.github.mrglassdanny.domsa.lang.fn.ApiFn;
+import com.github.mrglassdanny.domsa.lang.fn.DateFn;
+import com.github.mrglassdanny.domsa.lang.fn.EnvFn;
+import com.github.mrglassdanny.domsa.lang.oper.SqlOper;
 import com.google.gson.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ErrorNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,6 +62,21 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         this.scopes.peek().put(name, data);
     }
 
+    private String evalFormatString(String fmtStr) {
+        String adjFmtStr = fmtStr;
+        Matcher matcher = FORMAT_STRING_PATTERN.matcher(fmtStr);
+        while(matcher.find()) {
+            String matchStr = matcher.group();
+            String exprStr = matchStr.substring(1, matchStr.length() - 1);
+            var parser = new DomsaScriptParser(
+                    new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(exprStr))));
+            var exprCtx = parser.expr();
+            var exprRes = this.visitExpr(exprCtx);
+            adjFmtStr = adjFmtStr.replace(matchStr, exprRes.getAsString().replace("\"", ""));
+        }
+        return adjFmtStr.substring(1, adjFmtStr.length() - 1);
+    }
+
     @Override
     public JsonElement visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
 
@@ -87,26 +104,145 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
+    public JsonElement visitFnArgExpr(DomsaScriptParser.FnArgExprContext ctx) {
+        if (ctx.expr() != null) {
+            return this.visitExpr(ctx.expr());
+        } else if (ctx.jsonArr() != null) {
+            return this.visitJsonArr(ctx.jsonArr());
+        } else {
+            return this.visitJsonObj(ctx.jsonObj());
+        }
+    }
+
+    @Override
     public JsonElement visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
 
         String fnName = ctx.Id().getText();
-        var req = this.visitJsonObj(ctx.jsonObj()).getAsJsonObject();
         boolean catchErr = ctx.Question() != null;
 
-        var domsaFn = DomsaFnRegistry.fns.get(fnName);
+        switch (fnName) {
+            case "env" -> {
+                try {
+                    // args: property (string)
+                    // return: value (string)
 
-        if (domsaFn == null) {
-            return JsonNull.INSTANCE;
+                    String msg = "'env' function expects 1 string argument";
+
+                    if (ctx.fnArgExpr().isEmpty() || ctx.fnArgExpr().size() > 1) {
+                        throw new RuntimeException(msg);
+                    }
+
+                    var arg = this.visitFnArgExpr(ctx.fnArgExpr(0));
+                    if (!arg.isJsonPrimitive()) {
+                        throw new RuntimeException(msg);
+                    }
+
+                    return new JsonPrimitive(EnvFn.env(arg.getAsString()));
+                } catch (Exception fnException) {
+                    if (!catchErr) {
+                        throw new RuntimeException(fnException.getMessage());
+                    }
+                    return JsonNull.INSTANCE;
+                }
+            }
+            case "get" -> {
+                try {
+                    // args: request (object)
+                    // return: response (object)
+
+                    String msg = "'get' function expects 1 JsonObject argument";
+
+                    if (ctx.fnArgExpr().isEmpty() || ctx.fnArgExpr().size() > 1) {
+                        throw new RuntimeException(msg);
+                    }
+
+                    var arg = this.visitFnArgExpr(ctx.fnArgExpr(0));
+                    if (!arg.isJsonObject()) {
+                        throw new RuntimeException(msg);
+                    }
+
+                    return ApiFn.get(arg.getAsJsonObject());
+                } catch (Exception fnException) {
+                    if (!catchErr) {
+                        throw new RuntimeException(fnException.getMessage());
+                    }
+                    return JsonNull.INSTANCE;
+                }
+            }
+            case "post" -> {
+                try {
+                    // args: request (object)
+                    // return: response (object)
+
+                    String msg = "'post' function expects 1 JsonObject argument";
+
+                    if (ctx.fnArgExpr().isEmpty() || ctx.fnArgExpr().size() > 1) {
+                        throw new RuntimeException(msg);
+                    }
+
+                    var arg = this.visitFnArgExpr(ctx.fnArgExpr(0));
+                    if (!arg.isJsonObject()) {
+                        throw new RuntimeException(msg);
+                    }
+
+                    return ApiFn.post(arg.getAsJsonObject());
+                } catch (Exception fnException) {
+                    if (!catchErr) {
+                        throw new RuntimeException(fnException.getMessage());
+                    }
+                    return JsonNull.INSTANCE;
+                }
+            }
+            case "date" -> {
+                try {
+                    // args: format? (string), date to be formatted? (string)
+                    // return: formatted date (string)
+
+                    if (ctx.fnArgExpr().isEmpty()) {
+                        return new JsonPrimitive(DateFn.date());
+                    } else if (ctx.fnArgExpr().size() == 1) {
+                        var fmt = this.visitFnArgExpr(ctx.fnArgExpr(0));
+                        if (!fmt.isJsonPrimitive()) {
+                            throw new RuntimeException("'date' function expects 1 string argument");
+                        }
+
+                        return new JsonPrimitive(DateFn.date(fmt.getAsString()));
+                    } else if (ctx.fnArgExpr().size() == 2) {
+                        var fmt = this.visitFnArgExpr(ctx.fnArgExpr(0));
+                        if (!fmt.isJsonPrimitive()) {
+                            throw new RuntimeException("'date' function expects 2 string arguments");
+                        }
+                        var dte = this.visitFnArgExpr(ctx.fnArgExpr(1));
+                        if (!dte.isJsonPrimitive()) {
+                            throw new RuntimeException("'date' function expects 2 string arguments");
+                        }
+
+                        return new JsonPrimitive(DateFn.date(fmt.getAsString(), dte.getAsString()));
+                    } else {
+                        throw new RuntimeException("'date' function not expecting more than 2 arguments");
+                    }
+                } catch (Exception fnException) {
+                    if (!catchErr) {
+                        throw new RuntimeException(fnException.getMessage());
+                    }
+                    return JsonNull.INSTANCE;
+                }
+            }
+            default -> throw new RuntimeException("'" + fnName + "' is not a recognized function");
         }
+    }
 
+    @Override
+    public JsonArray visitSqlExpr(DomsaScriptParser.SqlExprContext ctx) {
+        boolean catchErr = ctx.Question() != null;
         try {
-            return domsaFn.exec(req);
-        } catch (Exception fnException) {
+            return SqlOper.exec(this.evalFormatString(ctx.FormatString().getText()));
+        } catch (Exception operException) {
             if (!catchErr) {
-                throw new RuntimeException(fnException.getMessage());
+                throw new RuntimeException(operException.getMessage());
             }
 
-            return JsonNull.INSTANCE;
+            return new JsonArray();
         }
     }
 
@@ -118,24 +254,15 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitIdExpr((ctx.idExpr()));
         } else if (ctx.fnExpr() != null) {
             return this.visitFnExpr(ctx.fnExpr());
+        } else if (ctx.sqlExpr() != null) {
+            return this.visitSqlExpr(ctx.sqlExpr());
         } else if (ctx.Number() != null) {
             return new JsonPrimitive(ctx.Number().getText());
         } else if (ctx.String() != null) {
             var str = ctx.String().getText();
             return new JsonPrimitive(str.substring(1, str.length() - 1));
         } else if (ctx.FormatString() != null) {
-            String fmtStrRes = ctx.FormatString().getText();
-            Matcher matcher = FORMAT_STRING_PATTERN.matcher(ctx.FormatString().getText());
-            while(matcher.find()) {
-                String matchStr = matcher.group();
-                String exprStr = matchStr.substring(1, matchStr.length() - 1);
-                var parser = new DomsaScriptParser(
-                        new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(exprStr))));
-                var exprCtx = parser.expr();
-                var exprRes = this.visitExpr(exprCtx);
-                fmtStrRes = fmtStrRes.replace(matchStr, exprRes.getAsString().replace("\"", ""));
-            }
-            return new JsonPrimitive(fmtStrRes.substring(1, fmtStrRes.length() - 1));
+            return new JsonPrimitive(this.evalFormatString(ctx.FormatString().getText()));
         } else if (ctx.True() != null) {
             return new JsonPrimitive(true);
         } else if (ctx.False() != null) {
@@ -380,18 +507,22 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
+    public JsonElement visitAssignValue(DomsaScriptParser.AssignValueContext ctx) {
+        if (ctx.expr() != null) {
+            return this.visitExpr(ctx.expr());
+        } else if (ctx.jsonArr() != null) {
+            return this.visitJsonArr(ctx.jsonArr());
+        } else {
+            return this.visitJsonObj(ctx.jsonObj());
+        }
+    }
+
+    @Override
     public String visitAssign(DomsaScriptParser.AssignContext ctx) {
 
         var tup = this.visitAssignId(ctx.assignId());
 
-        JsonElement data;
-        if (ctx.expr() != null) {
-            data = this.visitExpr(ctx.expr());
-        } else if (ctx.jsonArr() != null) {
-            data = this.visitJsonArr(ctx.jsonArr());
-        } else {
-            data = this.visitJsonObj(ctx.jsonObj());
-        }
+        JsonElement data = this.visitAssignValue(ctx.assignValue());
 
         if (tup.data == null) { // Means non object field does not exist in any scope
             this.putVariable(tup.name, data);

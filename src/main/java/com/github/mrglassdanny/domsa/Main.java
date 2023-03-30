@@ -1,12 +1,11 @@
 package com.github.mrglassdanny.domsa;
 
 
-import com.github.mrglassdanny.domsa.lang.DomsaScriptSyntaxErrorListener;
+import com.github.mrglassdanny.domsa.lang.err.DomsaScriptSyntaxErrorListener;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.client.SqlClient;
-import com.github.mrglassdanny.domsa.lang.fn.DomsaFnRegistry;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
@@ -70,7 +69,6 @@ public class Main {
 
     private static void initComponents() throws Exception {
         Environment.init();
-        DomsaFnRegistry.init();
 
         SqlClient.init(Environment.properties.get("databaseUrl"));
 

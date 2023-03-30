@@ -1,4 +1,4 @@
-package com.github.mrglassdanny.domsa.lang;
+package com.github.mrglassdanny.domsa.lang.err;
 
 public class DomsaScriptSyntaxError {
     public int line;

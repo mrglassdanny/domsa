@@ -1,5 +1,6 @@
-package com.github.mrglassdanny.domsa.lang;
+package com.github.mrglassdanny.domsa.lang.err;
 
+import com.github.mrglassdanny.domsa.lang.err.DomsaScriptSyntaxError;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;

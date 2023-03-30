@@ -1,6 +1,5 @@
-package com.github.mrglassdanny.domsa.lang.fn.sql;
+package com.github.mrglassdanny.domsa.lang.oper;
 
-import com.github.mrglassdanny.domsa.lang.fn.DomsaFn;
 import com.github.mrglassdanny.domsa.client.SqlClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
@@ -10,23 +9,21 @@ import com.google.gson.JsonPrimitive;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SqlFn implements DomsaFn {
+public class SqlOper {
+
     private static final Pattern SQL_SELECT_PATTERN = Pattern.compile("select", Pattern.CASE_INSENSITIVE);
 
-    @Override
-    public JsonObject exec(JsonObject req) throws Exception {
-        var res = new JsonObject();
+    public static JsonArray exec(String query) throws Exception {
 
-        String query = req.get("query").getAsString();
+        var res = new JsonArray();
 
         Matcher selectMatcher = SQL_SELECT_PATTERN.matcher(query);
 
         if (selectMatcher.find()) {
 
-            var data = new JsonArray();
-
             var rows = SqlClient.execQuery(query);
             var cols = rows.getMetaData();
+
             while (rows.next()) {
                 var obj = new JsonObject();
                 for (int colIdx = 1; colIdx <= cols.getColumnCount(); colIdx++) {
@@ -50,16 +47,12 @@ public class SqlFn implements DomsaFn {
                         }
                     }
                 }
-                data.add(obj);
+                res.add(obj);
             }
             rows.close();
 
-            res.add("rows", new JsonPrimitive(data.size()));
-            res.add("data", data);
-
         } else {
-            int rowsAffected = SqlClient.exec(query);
-            res.addProperty("rowsAffected", rowsAffected);
+            SqlClient.exec(query);
         }
 
         return res;

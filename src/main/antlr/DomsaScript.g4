@@ -11,11 +11,15 @@ idExpr
     Id (Dot Id)*
     ;
 
-fnExpr: Id LeftParen jsonObj RightParen Question?;
+fnArgExpr: expr | jsonArr | jsonObj;
+fnExpr: Id LeftParen (fnArgExpr (Comma fnArgExpr)*)? RightParen Question?;
+
+sqlExpr: Sql FormatString Question?;
 
 baseExpr
     : idExpr
     | fnExpr
+    | sqlExpr
     | Number
     | String
     | FormatString
@@ -66,7 +70,9 @@ assignId
     Id (Dot Id)*
     ;
 
-assign: assignId Assign (expr | jsonArr | jsonObj);
+assignValue: expr | jsonArr | jsonObj;
+
+assign: assignId Assign assignValue;
 
 // FLOW ------------------------------------------------------------------------------------
 
@@ -117,6 +123,7 @@ If : 'if';
 In : 'in';
 Null: 'null';
 True: 'true';
+Sql: 'sql';
 
 LeftParen : '(';
 RightParen : ')';
