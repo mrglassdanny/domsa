@@ -16,17 +16,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 
-import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Properties;
-
 public class Main {
 
-    public static HashMap<String, String> envConfigs = new HashMap<>();
-
     public static void main(String[] args) throws Exception {
-
-        initConfigs();
 
         initComponents();
 
@@ -76,21 +68,12 @@ public class Main {
         });
     }
 
-    private static void initConfigs() throws Exception {
-        String envFilePath = "environment.properties";
-        FileReader reader = new FileReader((envFilePath));
-
-        Properties props = new Properties();
-        props.load(reader);
-
-        envConfigs.put("databaseUrl", props.getProperty("databaseUrl"));
-
-        reader.close();
-    }
-
     private static void initComponents() throws Exception {
-        SqlClient.init(envConfigs.get("databaseUrl"));
+        Environment.init();
         DomsaFnRegistry.init();
+
+        SqlClient.init(Environment.properties.get("databaseUrl"));
+
     }
 
     private static void cleanupComponents() throws Exception {
