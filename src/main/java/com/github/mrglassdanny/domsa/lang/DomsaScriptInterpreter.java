@@ -24,12 +24,17 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     Stack<HashMap<String, JsonElement>> scopes;
 
     public DomsaScriptInterpreter() {
+        this(new JsonObject());
+    }
+
+    public DomsaScriptInterpreter(JsonObject req) {
         this.scopes = new Stack<>();
 
-        // Main scope
         var mainScopeVariables = new HashMap<String, JsonElement>(2);
-        mainScopeVariables.put("req", new JsonObject());
+
+        mainScopeVariables.put("req", req);
         mainScopeVariables.put("res", new JsonObject());
+
         this.scopes.push(mainScopeVariables);
     }
 
@@ -195,8 +200,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             }
             case "date" -> {
                 try {
-                    // args: format? (string), date to be formatted? (string)
-                    // return: formatted date (string)
+                    // args: format? (string)
+                    // return: date (string)
 
                     if (ctx.fnArgExpr().isEmpty()) {
                         return new JsonPrimitive(DateFn.date());
@@ -207,19 +212,44 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                         }
 
                         return new JsonPrimitive(DateFn.date(fmt.getAsString()));
-                    } else if (ctx.fnArgExpr().size() == 2) {
-                        var fmt = this.visitFnArgExpr(ctx.fnArgExpr(0));
-                        if (!fmt.isJsonPrimitive()) {
-                            throw new RuntimeException("'date' function expects 2 string arguments");
-                        }
-                        var dte = this.visitFnArgExpr(ctx.fnArgExpr(1));
+                    } else {
+                        throw new RuntimeException("'date' function expects less than 2 arguments");
+                    }
+                } catch (Exception fnException) {
+                    if (!catchErr) {
+                        throw new RuntimeException(fnException.getMessage());
+                    }
+                    return JsonNull.INSTANCE;
+                }
+            }
+            case "formatDate" -> {
+                try {
+                    // args: date (string), format? (string)
+                    // return: date (string)
+
+                    if (ctx.fnArgExpr().isEmpty()) {
+                        throw new RuntimeException("'formatDate' function expects at least 1 argument");
+                    } else if (ctx.fnArgExpr().size() == 1) {
+                        var dte = this.visitFnArgExpr(ctx.fnArgExpr(0));
                         if (!dte.isJsonPrimitive()) {
-                            throw new RuntimeException("'date' function expects 2 string arguments");
+                            throw new RuntimeException("'formatDate' function expects 1 string argument");
                         }
 
-                        return new JsonPrimitive(DateFn.date(fmt.getAsString(), dte.getAsString()));
+                        return new JsonPrimitive(DateFn.formatDate(dte.getAsString()));
+                    } else if (ctx.fnArgExpr().size() == 2) {
+                        var dte = this.visitFnArgExpr(ctx.fnArgExpr(0));
+                        if (!dte.isJsonPrimitive()) {
+                            throw new RuntimeException("'formatDate' function expects 2 string arguments");
+                        }
+                        var fmt = this.visitFnArgExpr(ctx.fnArgExpr(1));
+                        if (!fmt.isJsonPrimitive()) {
+                            throw new RuntimeException("'formatDate' function expects 2 string arguments");
+                        }
+
+
+                        return new JsonPrimitive(DateFn.formatDate(dte.getAsString(), fmt.getAsString()));
                     } else {
-                        throw new RuntimeException("'date' function not expecting more than 2 arguments");
+                        throw new RuntimeException("'formatDate' function expects less than 3 arguments");
                     }
                 } catch (Exception fnException) {
                     if (!catchErr) {

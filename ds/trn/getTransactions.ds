@@ -1,0 +1,3 @@
+
+
+res.transactions = sql`select * from dlytrn limit 10`?
