@@ -222,7 +222,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         } else if (ctx.sqlExpr() != null) {
             return this.visitSqlExpr(ctx.sqlExpr());
         } else if (ctx.Number() != null) {
-            return new JsonPrimitive(ctx.Number().getText());
+            return new JsonPrimitive(Double.parseDouble(ctx.Number().getText()));
         } else if (ctx.String() != null) {
             var str = ctx.String().getText();
             return new JsonPrimitive(str.substring(1, str.length() - 1));
