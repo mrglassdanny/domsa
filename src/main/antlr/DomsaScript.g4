@@ -15,11 +15,18 @@ fnArgExpr: expr | jsonArr | jsonObj;
 
 fnExpr: Id LeftParen (fnArgExpr (Comma fnArgExpr)*)? RightParen Question?;
 
+dsIdExpr: Id ColonColon Id (ColonColon Id)*;
+
+dsArgExpr: jsonObj;
+
+dsExpr: dsIdExpr LeftParen dsArgExpr RightParen;
+
 sqlExpr: Sql FormatString Question?;
 
 baseExpr
     : idExpr
     | fnExpr
+    | dsExpr
     | sqlExpr
     | Number
     | String
@@ -150,6 +157,7 @@ Not : '!'; // TODO
 
 Question : '?';
 Colon : ':';
+ColonColon: '::';
 Comma : ',';
 
 Assign : '=';

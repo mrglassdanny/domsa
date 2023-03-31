@@ -3,11 +3,16 @@ package com.github.mrglassdanny.domsa.lang;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
+import com.github.mrglassdanny.domsa.lang.err.DomsaScriptSyntaxErrorListener;
 import com.github.mrglassdanny.domsa.lang.fn.FnRouter;
 import com.github.mrglassdanny.domsa.lang.oper.SqlOper;
 import com.google.gson.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ConsoleErrorListener;
+import org.antlr.v4.runtime.RecognitionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +21,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
+
+    private static final Logger log = LoggerFactory.getLogger(DomsaScriptInterpreter.class);
 
     private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\{.*?}", Pattern.CASE_INSENSITIVE);
 
@@ -34,6 +41,43 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         mainScopeVariables.put("res", new JsonObject());
 
         this.scopes.push(mainScopeVariables);
+    }
+
+    public static JsonObject execScript(String script, JsonObject req) {
+
+        var parser = new DomsaScriptParser(
+                new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
+        var errListener = new DomsaScriptSyntaxErrorListener();
+        parser.addErrorListener(errListener);
+        parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
+
+        JsonObject res = new JsonObject();
+
+        try {
+            var scriptCtx = parser.script();
+
+            // Make sure we check for syntax errors before we pass to interpreter
+            if (!errListener.syntaxErrors.isEmpty()) {
+                var errList = new JsonArray();
+                for (var err : errListener.syntaxErrors) {
+                    var errInfo = new JsonObject();
+                    errInfo.addProperty("line", err.line);
+                    errInfo.addProperty("pos", err.charPositionInLine);
+                    errInfo.addProperty("msg", err.msg);
+                    errList.add(errInfo);
+                }
+                res.add("syntaxErrors", errList);
+            } else {
+                res = new DomsaScriptInterpreter(req).visitScript(scriptCtx);
+            }
+        } catch (RecognitionException recognitionException) {
+            res.addProperty("recognitionError", recognitionException.getMessage());
+        } catch (RuntimeException interpException) {
+            res = new JsonObject();
+            res.addProperty("runtimeError", interpException.getMessage());
+        }
+
+        return res;
     }
 
     private HashMap<String, JsonElement> getScope(String name) {
@@ -79,6 +123,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         }
         return adjFmtStr.substring(1, adjFmtStr.length() - 1);
     }
+
 
     @Override
     public JsonElement visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
@@ -140,6 +185,18 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
+    public JsonObject visitDsArgExpr(DomsaScriptParser.DsArgExprContext ctx) {
+        return this.visitJsonObj(ctx.jsonObj()).getAsJsonObject();
+    }
+
+    @Override
+    public JsonObject visitDsExpr(DomsaScriptParser.DsExprContext ctx) {
+        var name = ctx.dsIdExpr().getText().replace("::", "/");
+        var req = this.visitDsArgExpr(ctx.dsArgExpr());
+        return DomsaScriptInterpreter.execScript(DomsaScriptRegistry.scripts.get(name), req);
+    }
+
+    @Override
     public JsonArray visitSqlExpr(DomsaScriptParser.SqlExprContext ctx) {
         boolean catchErr = ctx.Question() != null;
         try {
@@ -161,6 +218,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitIdExpr((ctx.idExpr()));
         } else if (ctx.fnExpr() != null) {
             return this.visitFnExpr(ctx.fnExpr());
+        } else if(ctx.dsExpr() != null) {
+            return this.visitDsExpr(ctx.dsExpr());
         } else if (ctx.sqlExpr() != null) {
             return this.visitSqlExpr(ctx.sqlExpr());
         } else if (ctx.Number() != null) {

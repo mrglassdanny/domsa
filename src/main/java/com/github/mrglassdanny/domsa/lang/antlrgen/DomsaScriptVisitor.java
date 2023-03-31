@@ -31,6 +31,24 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFnExpr(DomsaScriptParser.FnExprContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DomsaScriptParser#dsIdExpr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDsIdExpr(DomsaScriptParser.DsIdExprContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DomsaScriptParser#dsArgExpr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDsArgExpr(DomsaScriptParser.DsArgExprContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DomsaScriptParser#dsExpr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDsExpr(DomsaScriptParser.DsExprContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#sqlExpr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

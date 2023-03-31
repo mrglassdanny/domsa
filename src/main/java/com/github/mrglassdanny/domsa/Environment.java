@@ -15,7 +15,11 @@ public class Environment {
         Properties props = new Properties();
         props.load(reader);
 
-        properties.put("databaseUrl", props.getProperty("databaseUrl"));
+        for (var entry : props.entrySet()) {
+            var key = entry.getKey().toString();
+            var val = entry.getValue().toString();
+            properties.put(key, val);
+        }
 
         reader.close();
     }

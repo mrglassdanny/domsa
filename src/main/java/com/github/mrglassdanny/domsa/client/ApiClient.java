@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -15,37 +16,82 @@ import okhttp3.Response;
 
 public class ApiClient {
 
+    private static OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(600, TimeUnit.SECONDS).writeTimeout(600, TimeUnit.SECONDS).build();
 
-    public static JsonElement get(String urlStr) throws IOException, Exception {
 
-        URL url = new URL(urlStr);
+    public static JsonObject get(JsonObject req) throws Exception {
 
-        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(600, TimeUnit.SECONDS).writeTimeout(600, TimeUnit.SECONDS).build();
+        // Expecting url, headers?
 
-        Request request = new Request.Builder().url(url).get().addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json").build();
+        var reqUrlStr = req.get("url").getAsString();
+        URL reqUrl = new URL(reqUrlStr);
 
-        try (Response response = client.newCall(request).execute()) {
-            return JsonParser.parseString(response.body().string());
+        var request = new Request.Builder().url(reqUrl).get();
+
+        // Default headers
+        request.addHeader("Content-Type", "application/json");
+        request.addHeader("Accept", "application/json");
+
+        // Custom headers
+        if (req.get("headers") != null && !req.get("headers").isJsonNull()) {
+            var reqHeaders = req.get("headers").getAsJsonObject();
+            for (var entry : reqHeaders.entrySet()) {
+                request.addHeader(entry.getKey(), entry.getValue().getAsString());
+            }
+        }
+
+        try (Response response = httpClient.newCall(request.build()).execute()) {
+
+            var resHeaders = new JsonObject();
+            for (var headerName : response.headers().names()) {
+                resHeaders.addProperty(headerName, response.headers().get(headerName));
+            }
+            var resBody = JsonParser.parseString(response.body().string());
+
+            var res = new JsonObject();
+            res.add("headers", resHeaders);
+            res.add("body", resBody);
+            return res;
         }
     }
+    public static JsonObject post(JsonObject req) throws Exception {
 
-    public static JsonElement post(String urlStr, String bodyStr) throws IOException, Exception {
+        // Expecting url, headers?, body
 
-        URL url = new URL(urlStr);
+        var reqUrlStr = req.get("url").getAsString();
+        URL reqUrl = new URL(reqUrlStr);
 
-        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(600, TimeUnit.SECONDS).writeTimeout(600, TimeUnit.SECONDS).build();
-
+        var reqBodyStr = req.get("body").getAsString();
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType, bodyStr);
+        RequestBody reqBody = RequestBody.create(mediaType, reqBodyStr);
 
-        Request request = new Request.Builder().url(url).post(body).addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json").build();
+        var request = new Request.Builder().url(reqUrl).post(reqBody);
 
-        try (Response response = client.newCall(request).execute()) {
-            return JsonParser.parseString(response.body().string());
+        // Default headers
+        request.addHeader("Content-Type", "application/json");
+        request.addHeader("Accept", "application/json");
+
+        // Custom headers
+        if (req.get("headers") != null && !req.get("headers").isJsonNull()) {
+            var reqHeaders = req.get("headers").getAsJsonObject();
+            for (var entry : reqHeaders.entrySet()) {
+                request.addHeader(entry.getKey(), entry.getValue().getAsString());
+            }
+        }
+
+        try (Response response = httpClient.newCall(request.build()).execute()) {
+
+            var resHeaders = new JsonObject();
+            for (var headerName : response.headers().names()) {
+                resHeaders.addProperty(headerName, response.headers().get(headerName));
+            }
+            var resBody = JsonParser.parseString(response.body().string());
+
+            var res = new JsonObject();
+            res.add("headers", resHeaders);
+            res.add("body", resBody);
+            return res;
         }
     }
 }

@@ -1,23 +1,11 @@
 package com.github.mrglassdanny.domsa;
 
 
-import com.github.mrglassdanny.domsa.lang.err.DomsaScriptSyntaxErrorListener;
+import com.github.mrglassdanny.domsa.lang.DomsaScriptRegistry;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
-import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
-import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.client.SqlClient;
 import com.google.gson.*;
 import io.javalin.Javalin;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ConsoleErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-
-import java.io.File;
-import java.io.FileReader;
-import java.nio.CharBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class Main {
 
@@ -25,57 +13,26 @@ public class Main {
 
         initComponents();
 
-        var app = Javalin.create(/*config*/)
+        var app = Javalin.create()
                 .get("/", ctx -> ctx.result("domsa v0.0.1"))
-                .start(7070);
+                .post("/", ctx -> {
+                    ctx.contentType("application/json");
 
-        app.post("/", ctx -> {
-            ctx.contentType("application/json");
+                    String script = ctx.body();
 
-            String script = ctx.body();
+                    var res = DomsaScriptInterpreter.execScript(script, new JsonObject());
 
-            var parser = new DomsaScriptParser(
-                    new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
-            var errListener = new DomsaScriptSyntaxErrorListener();
-            parser.addErrorListener(errListener);
-            parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
-
-            JsonObject res = new JsonObject();
-
-            try {
-                var scriptCtx = parser.script();
-
-                // Make sure we check for syntax errors before we pass to interpreter
-                if (!errListener.syntaxErrors.isEmpty()) {
-                    var errList = new JsonArray();
-                    for (var err : errListener.syntaxErrors) {
-                        var errInfo = new JsonObject();
-                        errInfo.addProperty("line", err.line);
-                        errInfo.addProperty("pos", err.charPositionInLine);
-                        errInfo.addProperty("msg", err.msg);
-                        errList.add(errInfo);
-                    }
-                    res.add("syntaxErrors", errList);
-                } else {
-                    res = new DomsaScriptInterpreter().visitScript(scriptCtx);
-                }
-            } catch (RecognitionException recognitionException) {
-                res.addProperty("recognitionError", recognitionException.getMessage());
-            } catch (RuntimeException interpException) {
-                res = new JsonObject();
-                res.addProperty("runtimeError", interpException.getMessage());
-            }
-
-            ctx.result(res == null ? JsonNull.INSTANCE.toString() : res.toString());
-            ctx.status(200);
-        });
+                    ctx.result(res == null ? JsonNull.INSTANCE.toString() : res.toString());
+                    ctx.status(200);
+                })
+                .start(Integer.parseInt(Environment.properties.get("port")));
 
         registerApis(app);
     }
 
     private static void initComponents() throws Exception {
         Environment.init();
-
+        DomsaScriptRegistry.init();
         SqlClient.init(Environment.properties.get("databaseUrl"));
     }
 
@@ -84,67 +41,29 @@ public class Main {
     }
 
     private static void registerApis(Javalin app) throws Exception {
-        File dir = new File("ds/");
-        registerApis(app, dir.listFiles());
-    }
+        for (var entry : DomsaScriptRegistry.scripts.entrySet()) {
+            var path = entry.getKey();
+            var script = entry.getValue();
 
-    private static void registerApis(Javalin app, File[] files) throws Exception {
-        for (File file : files) {
-            if (file.isDirectory()) {
-                registerApis(app, file.listFiles());
-            } else {
+            app.post(path, ctx -> {
+                ctx.contentType("application/json");
 
-                String script = new String(Files.readAllBytes(Paths.get(file.getPath())));
+                String reqStr = ctx.body();
 
-                String path = file.getPath().replace('\\', '/');
-                path = path.substring(0, path.lastIndexOf('.'));
+                JsonObject req = null;
+                JsonObject res = null;
 
-                app.post(path, ctx -> {
-                    ctx.contentType("application/json");
+                try {
+                    req = JsonParser.parseString(reqStr).getAsJsonObject();
+                    res = DomsaScriptInterpreter.execScript(script, req);
+                } catch (JsonParseException | IllegalStateException jsonParseException) {
+                    res = new JsonObject();
+                    res.addProperty("requestError", "Expected JsonObject as request");
+                }
 
-                    String reqStr = ctx.body();
-
-                    JsonObject req = null;
-                    JsonObject res = new JsonObject();
-
-                    try {
-                        req = JsonParser.parseString(reqStr).getAsJsonObject();
-
-                        var parser = new DomsaScriptParser(
-                                new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
-                        var errListener = new DomsaScriptSyntaxErrorListener();
-                        parser.addErrorListener(errListener);
-                        parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
-
-                        var scriptCtx = parser.script();
-
-                        // Make sure we check for syntax errors before we pass to interpreter
-                        if (!errListener.syntaxErrors.isEmpty()) {
-                            var errList = new JsonArray();
-                            for (var err : errListener.syntaxErrors) {
-                                var errInfo = new JsonObject();
-                                errInfo.addProperty("line", err.line);
-                                errInfo.addProperty("pos", err.charPositionInLine);
-                                errInfo.addProperty("msg", err.msg);
-                                errList.add(errInfo);
-                            }
-                            res.add("syntaxErrors", errList);
-                        } else {
-                            res = new DomsaScriptInterpreter(req).visitScript(scriptCtx);
-                        }
-                    } catch (JsonParseException | IllegalStateException jsonParseException) {
-                        res.addProperty("requestError", "Expected JsonObject as request");
-                    } catch (RecognitionException recognitionException) {
-                        res.addProperty("recognitionError", recognitionException.getMessage());
-                    } catch (RuntimeException interpException) {
-                        res.addProperty("runtimeError", interpException.getMessage());
-                    }
-
-                    ctx.result(res == null ? JsonNull.INSTANCE.toString() : res.toString());
-                    ctx.status(200);
-                });
-
-            }
+                ctx.result(res == null ? JsonNull.INSTANCE.toString() : res.toString());
+                ctx.status(200);
+            });
         }
-    }
+     }
 }
