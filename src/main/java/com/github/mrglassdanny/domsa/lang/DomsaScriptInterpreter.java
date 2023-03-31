@@ -109,11 +109,17 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         this.scopes.peek().put(name, data);
     }
 
+    private String evalString(String str) {
+        // Remove extra double quotes
+        return str.substring(1, str.length() - 1);
+    }
+
     private String evalFormatString(String fmtStr) {
         String adjFmtStr = fmtStr;
         Matcher matcher = FORMAT_STRING_PATTERN.matcher(fmtStr);
-        while(matcher.find()) {
+        while (matcher.find()) {
             String matchStr = matcher.group();
+            // Remove curly braces
             String exprStr = matchStr.substring(1, matchStr.length() - 1);
             var parser = new DomsaScriptParser(
                     new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(exprStr))));
@@ -121,6 +127,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             var exprRes = this.visitExpr(exprCtx);
             adjFmtStr = adjFmtStr.replace(matchStr, exprRes.getAsString().replace("\"", ""));
         }
+
+        // Remove back ticks
         return adjFmtStr.substring(1, adjFmtStr.length() - 1);
     }
 
@@ -192,7 +200,16 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     public JsonObject visitDsExpr(DomsaScriptParser.DsExprContext ctx) {
         var name = ctx.dsIdExpr().getText().replace("::", "/");
         var req = this.visitDsArgExpr(ctx.dsArgExpr());
-        return DomsaScriptInterpreter.execScript(DomsaScriptRegistry.scripts.get(name), req);
+        boolean catchErr = ctx.Question() != null;
+        try {
+            return DomsaScriptInterpreter.execScript(DomsaScriptRegistry.scripts.get(name), req);
+        } catch (Exception operException) {
+            if (!catchErr) {
+                throw new RuntimeException(operException.getMessage());
+            }
+
+            return new JsonObject();
+        }
     }
 
     @Override
@@ -217,15 +234,14 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitIdExpr((ctx.idExpr()));
         } else if (ctx.fnExpr() != null) {
             return this.visitFnExpr(ctx.fnExpr());
-        } else if(ctx.dsExpr() != null) {
+        } else if (ctx.dsExpr() != null) {
             return this.visitDsExpr(ctx.dsExpr());
         } else if (ctx.sqlExpr() != null) {
             return this.visitSqlExpr(ctx.sqlExpr());
         } else if (ctx.Number() != null) {
             return new JsonPrimitive(Double.parseDouble(ctx.Number().getText()));
         } else if (ctx.String() != null) {
-            var str = ctx.String().getText();
-            return new JsonPrimitive(str.substring(1, str.length() - 1));
+            return new JsonPrimitive(evalString(ctx.String().getText()));
         } else if (ctx.FormatString() != null) {
             return new JsonPrimitive(this.evalFormatString(ctx.FormatString().getText()));
         } else if (ctx.True() != null) {
@@ -294,8 +310,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public JsonElement visitRelExpr(DomsaScriptParser.RelExprContext ctx) {
         if (ctx.Equal().isEmpty() && ctx.NotEqual().isEmpty() &&
-            ctx.Less().isEmpty() && ctx.Greater().isEmpty() &&
-            ctx.LessEqual().isEmpty() && ctx.GreaterEqual().isEmpty()) {
+                ctx.Less().isEmpty() && ctx.Greater().isEmpty() &&
+                ctx.LessEqual().isEmpty() && ctx.GreaterEqual().isEmpty()) {
             return this.visitAddExpr(ctx.addExpr(0));
         } else {
             var exprs = new ArrayList<JsonElement>();
@@ -405,7 +421,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         var arr = new JsonArray(ctx.jsonValue().size());
 
-        for(var val : ctx.jsonValue()) {
+        for (var val : ctx.jsonValue()) {
             arr.add(this.visitJsonValue(val));
         }
 
@@ -423,8 +439,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             if (pair.Id() != null) {
                 idText = pair.Id().getText();
             } else if (pair.String() != null) {
-                idText = pair.String().getText();
-                idText = idText.substring(1, idText.length() - 1);
+                idText = evalString(pair.String().getText());
+            } else {
+                idText = evalFormatString(pair.FormatString().getText());
             }
 
             obj.add(idText, this.visitJsonValue(pair.jsonValue()));

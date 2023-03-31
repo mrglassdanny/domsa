@@ -19,7 +19,7 @@ dsIdExpr: Id ColonColon Id (ColonColon Id)*;
 
 dsArgExpr: jsonObj;
 
-dsExpr: dsIdExpr LeftParen dsArgExpr RightParen;
+dsExpr: dsIdExpr LeftParen dsArgExpr RightParen Question?;
 
 sqlExpr: Sql FormatString Question?;
 
@@ -58,7 +58,7 @@ jsonValue
    ;
 
 jsonPair
-   : (Id | String) Colon jsonValue
+   : (Id | String | FormatString) Colon jsonValue
    ;
 
 jsonArr
