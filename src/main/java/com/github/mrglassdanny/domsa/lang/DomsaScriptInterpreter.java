@@ -198,11 +198,16 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     @Override
     public JsonObject visitDsExpr(DomsaScriptParser.DsExprContext ctx) {
-        var name = ctx.dsIdExpr().getText().replace("::", "/");
+        var exprText = ctx.dsIdExpr().getText();
+        var name = exprText.replace("::", "/");
         var req = this.visitDsArgExpr(ctx.dsArgExpr());
         boolean catchErr = ctx.Question() != null;
         try {
-            return DomsaScriptInterpreter.execScript(DomsaScriptRegistry.scripts.get(name), req);
+            var script = DomsaScriptRegistry.scripts.get(name);
+            if (script == null) {
+                throw new RuntimeException("'" + exprText + "' script does not exist");
+            }
+            return DomsaScriptInterpreter.execScript(script, req);
         } catch (Exception operException) {
             if (!catchErr) {
                 throw new RuntimeException(operException.getMessage());
