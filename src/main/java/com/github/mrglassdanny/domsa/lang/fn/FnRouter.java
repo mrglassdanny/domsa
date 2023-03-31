@@ -1,5 +1,6 @@
 package com.github.mrglassdanny.domsa.lang.fn;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
@@ -32,6 +33,18 @@ public class FnRouter {
                 validateArgumentCount(fnName, fnArgCnt, 1);
                 return new JsonPrimitive(UtilRepo.len(fnArgs.get(0)));
             }
+            case "strcat" -> {
+                validateArgumentCount(fnName, fnArgCnt, 2);
+                String a = fnArgs.get(0).getAsString();
+                String b = fnArgs.get(1).getAsString();
+                return new JsonPrimitive(UtilRepo.strcat(a, b));
+            }
+            case "arrcat" -> {
+                validateArgumentCount(fnName, fnArgCnt, 2);
+                JsonArray a = fnArgs.get(0).getAsJsonArray();
+                JsonArray b = fnArgs.get(1).getAsJsonArray();
+                return UtilRepo.arrcat(a, b);
+            }
             case "first" -> {
                 validateArgumentCount(fnName, fnArgCnt, 1);
                 return UtilRepo.first(fnArgs.get(0).getAsJsonArray());
@@ -57,6 +70,10 @@ public class FnRouter {
                     case 2 -> new JsonPrimitive(DateRepo.formatDate(fnArgs.get(0).getAsString(), fnArgs.get(1).getAsString()));
                     default -> throw new RuntimeException("'formatDate' function expects less than 3 arguments");
                 };
+            }
+            case "buildWhere" -> {
+                validateArgumentCount(fnName, fnArgCnt, 1);
+                return new JsonPrimitive(SqlRepo.buildWhere(fnArgs.get(0).getAsJsonObject()));
             }
             default -> throw new RuntimeException("'" + fnName + "' is not a recognized function");
         }

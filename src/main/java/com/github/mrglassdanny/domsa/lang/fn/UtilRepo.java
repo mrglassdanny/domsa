@@ -21,6 +21,17 @@ public class UtilRepo {
         }
     }
 
+    public static String strcat(String a, String b) {
+        return a + b;
+    }
+
+    public static JsonArray arrcat(JsonArray a, JsonArray b) {
+        var arr = new JsonArray(a.size() + b.size());
+        arr.addAll(a);
+        arr.addAll(b);
+        return arr;
+    }
+
     public static JsonElement first(JsonArray arr) {
         if (arr.size() == 0) {
             return JsonNull.INSTANCE;
