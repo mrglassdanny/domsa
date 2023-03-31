@@ -58,7 +58,7 @@ jsonValue
    ;
 
 jsonPair
-   : Id Colon jsonValue
+   : (Id | String) Colon jsonValue
    ;
 
 jsonArr

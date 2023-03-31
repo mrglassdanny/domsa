@@ -16,7 +16,7 @@ import okhttp3.Response;
 
 public class ApiClient {
 
-    private static OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(60, TimeUnit.SECONDS)
+    private static final OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(600, TimeUnit.SECONDS).writeTimeout(600, TimeUnit.SECONDS).build();
 
 
@@ -55,6 +55,7 @@ public class ApiClient {
             return res;
         }
     }
+
     public static JsonObject post(JsonObject req) throws Exception {
 
         // Expecting url, headers?, body

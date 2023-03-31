@@ -124,7 +124,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         return adjFmtStr.substring(1, adjFmtStr.length() - 1);
     }
 
-
     @Override
     public JsonElement visitIdExpr(DomsaScriptParser.IdExprContext ctx) {
 
@@ -419,7 +418,16 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         var obj = new JsonObject();
 
         for (var pair : ctx.jsonPair()) {
-            obj.add(pair.Id().getText(), this.visitJsonValue(pair.jsonValue()));
+
+            String idText = null;
+            if (pair.Id() != null) {
+                idText = pair.Id().getText();
+            } else if (pair.String() != null) {
+                idText = pair.String().getText();
+                idText = idText.substring(1, idText.length() - 1);
+            }
+
+            obj.add(idText, this.visitJsonValue(pair.jsonValue()));
         }
 
         return obj;
