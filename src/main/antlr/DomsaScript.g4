@@ -12,6 +12,7 @@ idExpr
     ;
 
 fnArgExpr: expr | jsonArr | jsonObj;
+
 fnExpr: Id LeftParen (fnArgExpr (Comma fnArgExpr)*)? RightParen Question?;
 
 sqlExpr: Sql FormatString Question?;

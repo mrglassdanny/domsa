@@ -1,7 +1,6 @@
 package com.github.mrglassdanny.domsa.lang.fn;
 
 import com.github.mrglassdanny.domsa.Environment;
-import com.google.gson.JsonObject;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -9,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class DateFn {
+public class DateRepo {
 
     private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 

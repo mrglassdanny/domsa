@@ -96,27 +96,26 @@ public class Main {
 
                 String script = new String(Files.readAllBytes(Paths.get(file.getPath())));
 
-                System.out.println(script);
-
                 String path = file.getPath().replace('\\', '/');
                 path = path.substring(0, path.lastIndexOf('.'));
 
-                System.out.println(path);
                 app.post(path, ctx -> {
                     ctx.contentType("application/json");
 
                     String reqStr = ctx.body();
-                    var req = JsonParser.parseString(reqStr).getAsJsonObject();
 
-                    var parser = new DomsaScriptParser(
-                            new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
-                    var errListener = new DomsaScriptSyntaxErrorListener();
-                    parser.addErrorListener(errListener);
-                    parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
-
+                    JsonObject req = null;
                     JsonObject res = new JsonObject();
 
                     try {
+                        req = JsonParser.parseString(reqStr).getAsJsonObject();
+
+                        var parser = new DomsaScriptParser(
+                                new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
+                        var errListener = new DomsaScriptSyntaxErrorListener();
+                        parser.addErrorListener(errListener);
+                        parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
+
                         var scriptCtx = parser.script();
 
                         // Make sure we check for syntax errors before we pass to interpreter
@@ -133,10 +132,11 @@ public class Main {
                         } else {
                             res = new DomsaScriptInterpreter(req).visitScript(scriptCtx);
                         }
+                    } catch (JsonParseException | IllegalStateException jsonParseException) {
+                        res.addProperty("requestError", "Expected JsonObject as request");
                     } catch (RecognitionException recognitionException) {
                         res.addProperty("recognitionError", recognitionException.getMessage());
                     } catch (RuntimeException interpException) {
-                        res = new JsonObject();
                         res.addProperty("runtimeError", interpException.getMessage());
                     }
 

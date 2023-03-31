@@ -3,9 +3,7 @@ package com.github.mrglassdanny.domsa.lang;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
-import com.github.mrglassdanny.domsa.lang.fn.ApiFn;
-import com.github.mrglassdanny.domsa.lang.fn.DateFn;
-import com.github.mrglassdanny.domsa.lang.fn.EnvFn;
+import com.github.mrglassdanny.domsa.lang.fn.FnRouter;
 import com.github.mrglassdanny.domsa.lang.oper.SqlOper;
 import com.google.gson.*;
 import org.antlr.v4.runtime.CharStreams;
@@ -123,142 +121,21 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     public JsonElement visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
 
         String fnName = ctx.Id().getText();
+
+        ArrayList<JsonElement> visitedFnArgExprs = new ArrayList<>();
+        for (var fnArgExpr : ctx.fnArgExpr()) {
+            visitedFnArgExprs.add(this.visitFnArgExpr(fnArgExpr));
+        }
+
         boolean catchErr = ctx.Question() != null;
 
-        switch (fnName) {
-            case "env" -> {
-                try {
-                    // args: property (string)
-                    // return: value (string)
-
-                    String msg = "'env' function expects 1 string argument";
-
-                    if (ctx.fnArgExpr().isEmpty() || ctx.fnArgExpr().size() > 1) {
-                        throw new RuntimeException(msg);
-                    }
-
-                    var arg = this.visitFnArgExpr(ctx.fnArgExpr(0));
-                    if (!arg.isJsonPrimitive()) {
-                        throw new RuntimeException(msg);
-                    }
-
-                    return new JsonPrimitive(EnvFn.env(arg.getAsString()));
-                } catch (Exception fnException) {
-                    if (!catchErr) {
-                        throw new RuntimeException(fnException.getMessage());
-                    }
-                    return JsonNull.INSTANCE;
-                }
+        try {
+            return FnRouter.exec(fnName, visitedFnArgExprs);
+        } catch (Exception fnException) {
+            if (!catchErr) {
+                throw new RuntimeException(fnException.getMessage());
             }
-            case "get" -> {
-                try {
-                    // args: request (object)
-                    // return: response (object)
-
-                    String msg = "'get' function expects 1 JsonObject argument";
-
-                    if (ctx.fnArgExpr().isEmpty() || ctx.fnArgExpr().size() > 1) {
-                        throw new RuntimeException(msg);
-                    }
-
-                    var arg = this.visitFnArgExpr(ctx.fnArgExpr(0));
-                    if (!arg.isJsonObject()) {
-                        throw new RuntimeException(msg);
-                    }
-
-                    return ApiFn.get(arg.getAsJsonObject());
-                } catch (Exception fnException) {
-                    if (!catchErr) {
-                        throw new RuntimeException(fnException.getMessage());
-                    }
-                    return JsonNull.INSTANCE;
-                }
-            }
-            case "post" -> {
-                try {
-                    // args: request (object)
-                    // return: response (object)
-
-                    String msg = "'post' function expects 1 JsonObject argument";
-
-                    if (ctx.fnArgExpr().isEmpty() || ctx.fnArgExpr().size() > 1) {
-                        throw new RuntimeException(msg);
-                    }
-
-                    var arg = this.visitFnArgExpr(ctx.fnArgExpr(0));
-                    if (!arg.isJsonObject()) {
-                        throw new RuntimeException(msg);
-                    }
-
-                    return ApiFn.post(arg.getAsJsonObject());
-                } catch (Exception fnException) {
-                    if (!catchErr) {
-                        throw new RuntimeException(fnException.getMessage());
-                    }
-                    return JsonNull.INSTANCE;
-                }
-            }
-            case "date" -> {
-                try {
-                    // args: format? (string)
-                    // return: date (string)
-
-                    if (ctx.fnArgExpr().isEmpty()) {
-                        return new JsonPrimitive(DateFn.date());
-                    } else if (ctx.fnArgExpr().size() == 1) {
-                        var fmt = this.visitFnArgExpr(ctx.fnArgExpr(0));
-                        if (!fmt.isJsonPrimitive()) {
-                            throw new RuntimeException("'date' function expects 1 string argument");
-                        }
-
-                        return new JsonPrimitive(DateFn.date(fmt.getAsString()));
-                    } else {
-                        throw new RuntimeException("'date' function expects less than 2 arguments");
-                    }
-                } catch (Exception fnException) {
-                    if (!catchErr) {
-                        throw new RuntimeException(fnException.getMessage());
-                    }
-                    return JsonNull.INSTANCE;
-                }
-            }
-            case "formatDate" -> {
-                try {
-                    // args: date (string), format? (string)
-                    // return: date (string)
-
-                    if (ctx.fnArgExpr().isEmpty()) {
-                        throw new RuntimeException("'formatDate' function expects at least 1 argument");
-                    } else if (ctx.fnArgExpr().size() == 1) {
-                        var dte = this.visitFnArgExpr(ctx.fnArgExpr(0));
-                        if (!dte.isJsonPrimitive()) {
-                            throw new RuntimeException("'formatDate' function expects 1 string argument");
-                        }
-
-                        return new JsonPrimitive(DateFn.formatDate(dte.getAsString()));
-                    } else if (ctx.fnArgExpr().size() == 2) {
-                        var dte = this.visitFnArgExpr(ctx.fnArgExpr(0));
-                        if (!dte.isJsonPrimitive()) {
-                            throw new RuntimeException("'formatDate' function expects 2 string arguments");
-                        }
-                        var fmt = this.visitFnArgExpr(ctx.fnArgExpr(1));
-                        if (!fmt.isJsonPrimitive()) {
-                            throw new RuntimeException("'formatDate' function expects 2 string arguments");
-                        }
-
-
-                        return new JsonPrimitive(DateFn.formatDate(dte.getAsString(), fmt.getAsString()));
-                    } else {
-                        throw new RuntimeException("'formatDate' function expects less than 3 arguments");
-                    }
-                } catch (Exception fnException) {
-                    if (!catchErr) {
-                        throw new RuntimeException(fnException.getMessage());
-                    }
-                    return JsonNull.INSTANCE;
-                }
-            }
-            default -> throw new RuntimeException("'" + fnName + "' is not a recognized function");
+            return JsonNull.INSTANCE;
         }
     }
 
@@ -548,7 +425,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public String visitAssign(DomsaScriptParser.AssignContext ctx) {
+    public JsonElement visitAssign(DomsaScriptParser.AssignContext ctx) {
 
         var tup = this.visitAssignId(ctx.assignId());
 
@@ -564,11 +441,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             }
         }
 
-        return null;
+        return JsonNull.INSTANCE;
     }
 
     @Override
-    public Object visitStmt(DomsaScriptParser.StmtContext ctx) {
+    public JsonElement visitStmt(DomsaScriptParser.StmtContext ctx) {
         if (ctx.nestStmt() != null) {
             this.scopes.push(new HashMap<>());
             this.visitNestStmt(ctx.nestStmt());
@@ -583,16 +460,16 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitFnStmt(ctx.fnStmt());
         }
 
-        return null;
+        return JsonNull.INSTANCE;
     }
 
     @Override
-    public Object visitAssignStmt(DomsaScriptParser.AssignStmtContext ctx) {
+    public JsonElement visitAssignStmt(DomsaScriptParser.AssignStmtContext ctx) {
         return this.visitAssign(ctx.assign());
     }
 
     @Override
-    public Object visitCondStmt(DomsaScriptParser.CondStmtContext ctx) {
+    public JsonElement visitCondStmt(DomsaScriptParser.CondStmtContext ctx) {
 
         for (int exprIdx = 0; exprIdx < ctx.expr().size(); exprIdx++) {
 
@@ -607,11 +484,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             }
         }
 
-        return null;
+        return JsonNull.INSTANCE;
     }
 
     @Override
-    public Object visitIterStmt(DomsaScriptParser.IterStmtContext ctx) {
+    public JsonElement visitIterStmt(DomsaScriptParser.IterStmtContext ctx) {
         // Only support for loop
 
         var iter = ctx.Id().getText();
@@ -630,17 +507,17 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             this.scopes.pop();
         }
 
-        return null;
+        return JsonNull.INSTANCE;
     }
 
     @Override
-    public Object visitFnStmt(DomsaScriptParser.FnStmtContext ctx) {
+    public JsonElement visitFnStmt(DomsaScriptParser.FnStmtContext ctx) {
         return this.visitFnExpr(ctx.fnExpr());
     }
 
     @Override
-    public Object visitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
-        Object stmtRes = null;
+    public JsonElement visitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
+        JsonElement stmtRes = null;
         for (var stmt : ctx.stmt()) {
             stmtRes = this.visitStmt(stmt);
         }

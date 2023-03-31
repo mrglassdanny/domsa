@@ -3,7 +3,7 @@ package com.github.mrglassdanny.domsa.lang.fn;
 import com.github.mrglassdanny.domsa.client.ApiClient;
 import com.google.gson.JsonObject;
 
-public class ApiFn {
+public class ApiRepo {
     public static JsonObject get(JsonObject req) throws Exception {
         var res = new JsonObject();
         String reqUrl = req.get("url").getAsString();
