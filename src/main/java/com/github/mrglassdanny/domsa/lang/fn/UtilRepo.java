@@ -6,6 +6,10 @@ import com.google.gson.JsonNull;
 
 public class UtilRepo {
 
+    public static void sleep(long ms) throws Exception {
+        Thread.sleep(ms);
+    }
+
     public static int len(JsonElement elem) {
 
         if (elem.isJsonArray()) {

@@ -29,6 +29,11 @@ public class FnRouter {
                     return JsonNull.INSTANCE;
                 }
             }
+            case "sleep" -> {
+                validateArgumentCount(fnName, fnArgCnt, 1);
+                UtilRepo.sleep(fnArgs.get(0).getAsLong());
+                return JsonNull.INSTANCE;
+            }
             case "len" -> {
                 validateArgumentCount(fnName, fnArgCnt, 1);
                 return new JsonPrimitive(UtilRepo.len(fnArgs.get(0)));
