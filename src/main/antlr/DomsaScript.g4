@@ -93,6 +93,7 @@ stmt
     |   condStmt
     |   iterStmt
     |   fnStmt
+    |   sqlStmt
     |   eos)
       eos?
     ;
@@ -110,6 +111,10 @@ iterStmt
 
 fnStmt
     : fnExpr
+    ;
+
+sqlStmt
+    : sqlExpr
     ;
 
 nestStmt

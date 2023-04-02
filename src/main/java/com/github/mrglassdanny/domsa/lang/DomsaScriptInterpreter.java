@@ -605,6 +605,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
+    public Object visitSqlStmt(DomsaScriptParser.SqlStmtContext ctx) {
+        return this.visitSqlExpr(ctx.sqlExpr());
+    }
+
+    @Override
     public JsonElement visitNestStmt(DomsaScriptParser.NestStmtContext ctx) {
         JsonElement stmtRes = null;
         for (var stmt : ctx.stmt()) {
