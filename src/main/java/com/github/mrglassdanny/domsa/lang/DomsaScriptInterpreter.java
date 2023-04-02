@@ -221,7 +221,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     public JsonArray visitSqlExpr(DomsaScriptParser.SqlExprContext ctx) {
         boolean catchErr = ctx.Question() != null;
         try {
-            return SqlOper.exec(this.evalFormatString(ctx.FormatString().getText()));
+            var fmtStr = this.evalFormatString(ctx.FormatString().getText());
+            log.info(fmtStr);
+            return SqlOper.exec(fmtStr);
         } catch (Exception operException) {
             if (!catchErr) {
                 throw new RuntimeException(operException.getMessage());
@@ -547,6 +549,10 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitIterStmt(ctx.iterStmt());
         } else if (ctx.fnStmt() != null) {
             return this.visitFnStmt(ctx.fnStmt());
+        } else if (ctx.dsStmt() != null) {
+            return this.visitDsStmt(ctx.dsStmt());
+        } else if (ctx.sqlStmt() != null) {
+            return this.visitSqlStmt(ctx.sqlStmt());
         }
 
         return JsonNull.INSTANCE;
@@ -605,7 +611,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public Object visitSqlStmt(DomsaScriptParser.SqlStmtContext ctx) {
+    public JsonElement visitDsStmt(DomsaScriptParser.DsStmtContext ctx) {
+        return this.visitDsExpr(ctx.dsExpr());
+    }
+
+    @Override
+    public JsonElement visitSqlStmt(DomsaScriptParser.SqlStmtContext ctx) {
         return this.visitSqlExpr(ctx.sqlExpr());
     }
 
