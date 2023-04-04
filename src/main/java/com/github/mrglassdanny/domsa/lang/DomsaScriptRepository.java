@@ -11,13 +11,13 @@ public class DomsaScriptRepository {
     public static HashMap<String, String> consumers = new HashMap<>();
 
     public static void init() throws Exception {
-        File dir = new File("ds/src");
+        File dir = new File("ds/private");
         addScripts(dir.listFiles(), scripts);
 
-        dir = new File("ds/api/");
+        dir = new File("ds/public/api/");
         addScripts(dir.listFiles(), apis);
 
-        dir = new File("ds/consumer/");
+        dir = new File("ds/public/consumer/");
         addScripts(dir.listFiles(), consumers);
     }
 
