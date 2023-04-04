@@ -4,7 +4,7 @@ import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.lang.err.DomsaScriptSyntaxErrorListener;
-import com.github.mrglassdanny.domsa.lang.fn.FnRouter;
+import com.github.mrglassdanny.domsa.lang.fn.FnDispatcher;
 import com.github.mrglassdanny.domsa.lang.oper.SqlOper;
 import com.google.gson.*;
 import org.antlr.v4.runtime.CharStreams;
@@ -182,7 +182,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         boolean catchErr = ctx.Question() != null;
 
         try {
-            return FnRouter.exec(fnName, visitedFnArgExprs);
+            return FnDispatcher.exec(fnName, visitedFnArgExprs);
         } catch (Exception fnException) {
             if (!catchErr) {
                 throw new RuntimeException(fnException.getMessage());
@@ -203,7 +203,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         var req = this.visitDsArgExpr(ctx.dsArgExpr());
         boolean catchErr = ctx.Question() != null;
         try {
-            var script = DomsaScriptRegistry.scripts.get(name);
+            var script = DomsaScriptRepository.scripts.get(name);
             if (script == null) {
                 throw new RuntimeException("'" + exprText + "' script does not exist");
             }

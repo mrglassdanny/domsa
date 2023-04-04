@@ -1,13 +1,10 @@
 package com.github.mrglassdanny.domsa.lang.fn;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 
 import java.util.ArrayList;
 
-public class FnRouter {
+public class FnDispatcher {
 
     private static void validateArgumentCount(String fnName, int argCnt, int reqArgCnt) throws Exception {
         if (argCnt != reqArgCnt)
@@ -61,6 +58,11 @@ public class FnRouter {
             case "post" -> {
                 validateArgumentCount(fnName, fnArgCnt, 1);
                 return ApiRepo.post(fnArgs.get(0).getAsJsonObject());
+            }
+            case "produce" -> {
+                validateArgumentCount(fnName, fnArgCnt, 1);
+                KafkaRepo.produce(fnArgs.get(0).getAsJsonObject());
+                return new JsonObject();
             }
             case "date" -> {
                 return switch (fnArgs.size()) {

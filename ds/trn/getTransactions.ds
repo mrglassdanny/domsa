@@ -1,5 +1,0 @@
-
-
-
-res.transactions = sql`select actcod, trndte, frstol, tostol
-                        from dlytrn where frstol = '{req.frstol}' limit 10`

@@ -1,11 +1,21 @@
 package com.github.mrglassdanny.domsa;
 
 
-import com.github.mrglassdanny.domsa.lang.DomsaScriptRegistry;
+import com.github.mrglassdanny.domsa.client.KafkaClient;
+import com.github.mrglassdanny.domsa.lang.DomsaScriptRepository;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.client.SqlClient;
 import com.google.gson.*;
 import io.javalin.Javalin;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 public class Main {
 
@@ -28,11 +38,12 @@ public class Main {
                 .start(Integer.parseInt(Environment.properties.get("port")));
 
         registerApis(app);
+        registerConsumers(app);
     }
 
     private static void initComponents() throws Exception {
         Environment.init();
-        DomsaScriptRegistry.init();
+        DomsaScriptRepository.init();
         SqlClient.init(Environment.properties.get("databaseUrl"));
     }
 
@@ -41,7 +52,9 @@ public class Main {
     }
 
     private static void registerApis(Javalin app) throws Exception {
-        for (var entry : DomsaScriptRegistry.scripts.entrySet()) {
+
+        for (var entry : DomsaScriptRepository.apis.entrySet()) {
+
             var path = entry.getKey();
             var script = entry.getValue();
 
@@ -65,5 +78,45 @@ public class Main {
                 ctx.status(200);
             });
         }
-     }
+    }
+
+    private static void registerConsumers(Javalin app) throws Exception {
+
+        for (var entry : DomsaScriptRepository.consumers.entrySet()) {
+
+            var path = entry.getKey();
+            var script = entry.getValue();
+
+            var topic = path.substring(path.lastIndexOf('/') + 1);
+
+            CompletableFuture.runAsync(() -> {
+                Properties consumerProperties = createProperties();
+
+                try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProperties)) {
+                    consumer.subscribe(Collections.singletonList(topic));
+                    while (true) {
+                        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                        for (var record : records) {
+                            var req = JsonParser.parseString(record.value()).getAsJsonObject();
+                            var res = DomsaScriptInterpreter.execScript(script, req);
+                            System.out.println(res.toString());
+                        }
+                    }
+
+                }
+            });
+
+        }
+    }
+
+    private static Properties createProperties() {
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.properties.get("bootstrapServer"));
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, Environment.properties.get("appName"));
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+        return props;
+    }
 }

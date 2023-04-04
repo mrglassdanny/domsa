@@ -1,0 +1,2 @@
+
+res.trns = sql`select * from dlytrn limit 10`
