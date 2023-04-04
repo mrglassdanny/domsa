@@ -1,3 +1,6 @@
+# domsa script files
+*.ds
+
 # Compiled class file
 *.class
 
