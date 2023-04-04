@@ -1,11 +1,11 @@
 package com.github.mrglassdanny.domsa.lang;
 
+import com.github.mrglassdanny.domsa.client.SqlClient;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.lang.err.DomsaScriptSyntaxErrorListener;
 import com.github.mrglassdanny.domsa.lang.fn.FnDispatcher;
-import com.github.mrglassdanny.domsa.lang.oper.SqlOper;
 import com.google.gson.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -25,6 +25,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     private static final Logger log = LoggerFactory.getLogger(DomsaScriptInterpreter.class);
 
     private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\{.*?}", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern SQL_SELECT_PATTERN = Pattern.compile("select", Pattern.CASE_INSENSITIVE);
 
     Stack<HashMap<String, JsonElement>> scopes;
 
@@ -222,8 +224,48 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         boolean catchErr = ctx.Question() != null;
         try {
             var fmtStr = this.evalFormatString(ctx.FormatString().getText());
-            log.info(fmtStr);
-            return SqlOper.exec(fmtStr);
+
+            var res = new JsonArray();
+            {
+                Matcher selectMatcher = SQL_SELECT_PATTERN.matcher(fmtStr);
+
+                if (selectMatcher.find()) {
+
+                    var rows = SqlClient.execQuery(fmtStr);
+                    var cols = rows.getMetaData();
+
+                    while (rows.next()) {
+                        var obj = new JsonObject();
+                        for (int colIdx = 1; colIdx <= cols.getColumnCount(); colIdx++) {
+                            var col = cols.getColumnName(colIdx);
+
+                            if (rows.getObject(colIdx) == null) {
+                                obj.add(col, JsonNull.INSTANCE);
+                            } else {
+                                switch (cols.getColumnType(colIdx)) {
+                                    case 0 -> // Null
+                                            obj.add(col, JsonNull.INSTANCE);
+                                    case 16 -> // Boolean
+                                            obj.add(col, new JsonPrimitive(rows.getBoolean(colIdx)));
+                                    case -5, 5, 2, -8, -6, 4, -7 -> // Int
+                                            obj.add(col, new JsonPrimitive(rows.getInt(colIdx)));
+                                    case 3, 6, 8 -> // Double
+                                            obj.add(col, new JsonPrimitive(rows.getDouble(colIdx)));
+                                    case 7 -> // Real
+                                            obj.add(col, new JsonPrimitive(rows.getBigDecimal(colIdx)));
+                                    default -> obj.add(col, new JsonPrimitive(rows.getObject(colIdx).toString()));
+                                }
+                            }
+                        }
+                        res.add(obj);
+                    }
+                    rows.close();
+
+                } else {
+                    SqlClient.exec(fmtStr);
+                }
+            }
+            return res;
         } catch (Exception operException) {
             if (!catchErr) {
                 throw new RuntimeException(operException.getMessage());
