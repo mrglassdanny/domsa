@@ -29,7 +29,7 @@ public class Main {
 
                     String script = ctx.body();
 
-                    var res = DomsaScriptInterpreter.execScript(script, new JsonObject());
+                    var res = DomsaScriptInterpreter.exec(script, new JsonObject());
 
                     ctx.result(res == null ? JsonNull.INSTANCE.toString() : res.toString());
                     ctx.status(200);
@@ -67,7 +67,7 @@ public class Main {
 
                 try {
                     req = JsonParser.parseString(reqStr).getAsJsonObject();
-                    res = DomsaScriptInterpreter.execScript(script, req);
+                    res = DomsaScriptInterpreter.exec(script, req);
                 } catch (JsonParseException | IllegalStateException jsonParseException) {
                     res = new JsonObject();
                     res.addProperty("requestError", "Expected JsonObject as request");
@@ -106,7 +106,7 @@ public class Main {
                         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                         for (var record : records) {
                             var req = JsonParser.parseString(record.value()).getAsJsonObject();
-                            var res = DomsaScriptInterpreter.execScript(script, req);
+                            var res = DomsaScriptInterpreter.exec(script, req);
                             System.out.println(res.toString());
                         }
                     }

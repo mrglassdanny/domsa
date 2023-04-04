@@ -43,7 +43,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         this.scopes.push(mainScopeVariables);
     }
 
-    public static JsonObject execScript(String script, JsonObject req) {
+    public static JsonObject exec(String script, JsonObject req) {
 
         var parser = new DomsaScriptParser(
                 new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
@@ -207,7 +207,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             if (script == null) {
                 throw new RuntimeException("'" + exprText + "' script does not exist");
             }
-            return DomsaScriptInterpreter.execScript(script, req);
+            return DomsaScriptInterpreter.exec(script, req);
         } catch (Exception operException) {
             if (!catchErr) {
                 throw new RuntimeException(operException.getMessage());
