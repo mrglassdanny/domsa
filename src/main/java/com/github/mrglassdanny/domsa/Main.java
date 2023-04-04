@@ -1,7 +1,6 @@
 package com.github.mrglassdanny.domsa;
 
 
-import com.github.mrglassdanny.domsa.client.KafkaClient;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptRepository;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.client.SqlClient;
@@ -21,7 +20,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        initComponents();
+        init();
 
         var app = Javalin.create()
                 .get("/", ctx -> ctx.result("domsa v0.0.1"))
@@ -38,16 +37,16 @@ public class Main {
                 .start(Integer.parseInt(Environment.properties.get("port")));
 
         registerApis(app);
-        registerConsumers(app);
+        registerConsumers();
     }
 
-    private static void initComponents() throws Exception {
+    private static void init() throws Exception {
         Environment.init();
         DomsaScriptRepository.init();
         SqlClient.init(Environment.properties.get("databaseUrl"));
     }
 
-    private static void cleanupComponents() throws Exception {
+    private static void cleanup() throws Exception {
         SqlClient.close();
     }
 
@@ -80,7 +79,7 @@ public class Main {
         }
     }
 
-    private static void registerConsumers(Javalin app) throws Exception {
+    private static void registerConsumers() throws Exception {
 
         for (var entry : DomsaScriptRepository.consumers.entrySet()) {
 
@@ -90,9 +89,18 @@ public class Main {
             var topic = path.substring(path.lastIndexOf('/') + 1);
 
             CompletableFuture.runAsync(() -> {
-                Properties consumerProperties = createProperties();
 
-                try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProperties)) {
+                Properties props = new Properties();
+                {
+                    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.properties.get("bootstrapServer"));
+                    props.put(ConsumerConfig.GROUP_ID_CONFIG, Environment.properties.get("appName"));
+                    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+                    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+                    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+                    props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+                }
+
+                try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
                     consumer.subscribe(Collections.singletonList(topic));
                     while (true) {
                         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
@@ -105,18 +113,6 @@ public class Main {
 
                 }
             });
-
         }
-    }
-
-    private static Properties createProperties() {
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.properties.get("bootstrapServer"));
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, Environment.properties.get("appName"));
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
-        return props;
     }
 }
