@@ -41,15 +41,15 @@ public class Main {
 
         try {
             registerApis(app);
-            registerKafkaListeners();
-            registerJobs();
         } catch (Exception e) {
-            System.out.println("Failure to register: " + e.getMessage());
+            System.out.println("Failure to register apis: " + e.getMessage());
         }
 
-
-        String dir = System.getProperty("user.dir");
-        System.out.println(dir);
+        try {
+            registerKafkaListeners();
+        } catch (Exception e) {
+            System.out.println("Failure to register kafka listeners: " + e.getMessage());
+        }
     }
 
     private static void init() throws Exception {
@@ -145,9 +145,5 @@ public class Main {
                 }
             });
         }
-    }
-
-    private static void registerJobs() throws Exception {
-
     }
 }
