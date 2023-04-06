@@ -103,6 +103,7 @@ public class Main {
             var configObj = config.getAsJsonObject();
 
             var ds = configObj.get("ds").getAsString();
+            ds = ds.substring(0, ds.lastIndexOf('.'));
             var topic = configObj.get("topic").getAsString();
             var groupId = configObj.get("groupId").getAsString();
             var clientId = Environment.properties.get("appName");
