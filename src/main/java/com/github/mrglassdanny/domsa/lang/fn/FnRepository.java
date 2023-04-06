@@ -1,5 +1,6 @@
 package com.github.mrglassdanny.domsa.lang.fn;
 
+import com.github.mrglassdanny.domsa.lang.fn.Module;
 import com.github.mrglassdanny.domsa.lang.fn.api.ApiModule;
 import com.github.mrglassdanny.domsa.lang.fn.arr.ArrModule;
 import com.github.mrglassdanny.domsa.lang.fn.date.DateModule;

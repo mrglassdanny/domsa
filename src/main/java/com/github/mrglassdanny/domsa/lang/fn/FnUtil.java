@@ -11,33 +11,33 @@ public class FnUtil {
     public static void validateArgumentType(String name, String argName, JsonElement arg, FnArgType reqType) throws Exception {
 
         if (arg == null) {
-            throw new RuntimeException(name + " expects argument " + argName + " to not be null");
+            throw new RuntimeException(name + " expects argument '" + argName + "' to not be null");
         }
 
         switch (reqType) {
             case Boolean -> {
-                if (!arg.isJsonPrimitive() && !arg.getAsJsonPrimitive().isBoolean()) {
-                    throw new RuntimeException(name + " expects argument " + argName + " to be boolean");
+                if (!arg.isJsonPrimitive() || !arg.getAsJsonPrimitive().isBoolean()) {
+                    throw new RuntimeException(name + " expects argument '" + argName + "' to be boolean");
                 }
             }
             case Number -> {
-                if (!arg.isJsonPrimitive() && !arg.getAsJsonPrimitive().isNumber()) {
-                    throw new RuntimeException(name + " expects argument " + argName + " to be number");
+                if (!arg.isJsonPrimitive() || !arg.getAsJsonPrimitive().isNumber()) {
+                    throw new RuntimeException(name + " expects argument '" + argName + "' to be number");
                 }
             }
             case String -> {
-                if (!arg.isJsonPrimitive() && !arg.getAsJsonPrimitive().isString()) {
-                    throw new RuntimeException(name + " expects argument " + argName + " to be string");
+                if (!arg.isJsonPrimitive() || !arg.getAsJsonPrimitive().isString()) {
+                    throw new RuntimeException(name + " expects argument '" + argName + "' to be string");
                 }
             }
             case JsonArray -> {
                 if (!arg.isJsonArray()) {
-                    throw new RuntimeException(name + " expects argument " + argName + " to be array");
+                    throw new RuntimeException(name + " expects argument '" + argName + "' to be array");
                 }
             }
             case JsonObject -> {
                 if (!arg.isJsonObject()) {
-                    throw new RuntimeException(name + " expects argument " + argName + " to be object");
+                    throw new RuntimeException(name + " expects argument '" + argName + "' to be object");
                 }
             }
             default -> {

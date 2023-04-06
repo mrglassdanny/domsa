@@ -12,6 +12,5 @@ public class DateModule extends Module {
     public void init() {
         this.fns.put("today", new TodayFn());
         this.fns.put("now", new NowFn());
-        this.fns.put("format", new FormatFn());
     }
 }

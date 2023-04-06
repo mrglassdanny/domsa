@@ -1,11 +1,11 @@
-package com.github.mrglassdanny.domsa.lang;
+package com.github.mrglassdanny.domsa.lang.ds;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
-public class DomsaScriptRepository {
+public class DsRepository {
     public static HashMap<String, String> scripts = new HashMap<>();
 
     public static void init() throws Exception {

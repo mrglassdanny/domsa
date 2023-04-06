@@ -1,7 +1,7 @@
 package com.github.mrglassdanny.domsa;
 
 
-import com.github.mrglassdanny.domsa.lang.DomsaScriptRepository;
+import com.github.mrglassdanny.domsa.lang.ds.DsRepository;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.client.SqlClient;
 import com.github.mrglassdanny.domsa.lang.fn.FnRepository;
@@ -13,8 +13,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import java.io.File;
-import java.io.FileReader;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
@@ -56,7 +54,7 @@ public class Main {
     private static void init() throws Exception {
         Environment.init();
         FnRepository.init();
-        DomsaScriptRepository.init();
+        DsRepository.init();
         SqlClient.init(Environment.properties.get("databaseUrl"));
     }
 
@@ -80,7 +78,7 @@ public class Main {
             path = basePath + path;
             var method = configObj.get("method").getAsString();
 
-            var script = DomsaScriptRepository.scripts.get(ds);
+            var script = DsRepository.scripts.get(ds);
 
             // TODO
             app.post(path, ctx -> {
@@ -119,7 +117,7 @@ public class Main {
             var groupId = configObj.get("groupId").getAsString();
             var clientId = Environment.properties.get("appName");
 
-            var script = DomsaScriptRepository.scripts.get(ds);
+            var script = DsRepository.scripts.get(ds);
 
             CompletableFuture.runAsync(() -> {
 

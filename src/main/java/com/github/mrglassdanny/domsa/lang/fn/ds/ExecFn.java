@@ -1,7 +1,7 @@
 package com.github.mrglassdanny.domsa.lang.fn.ds;
 
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
-import com.github.mrglassdanny.domsa.lang.DomsaScriptRepository;
+import com.github.mrglassdanny.domsa.lang.ds.DsRepository;
 import com.github.mrglassdanny.domsa.lang.fn.Fn;
 import com.github.mrglassdanny.domsa.lang.fn.FnArgType;
 import com.github.mrglassdanny.domsa.lang.fn.FnUtil;
@@ -27,7 +27,7 @@ public class ExecFn implements Fn {
         var path = args.get(0).getAsString();
         var req = args.get(1).getAsJsonObject();
 
-        var script = DomsaScriptRepository.scripts.get(path);
+        var script = DsRepository.scripts.get(path);
 
         if (script == null) {
             throw new RuntimeException(path + ".ds does not exist");
