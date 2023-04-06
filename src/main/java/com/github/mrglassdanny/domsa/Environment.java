@@ -10,7 +10,7 @@ public class Environment {
 
     public static void init() throws Exception {
         String envFilePath = "environment.properties";
-        FileReader reader = new FileReader((envFilePath));
+        FileReader reader = new FileReader(envFilePath);
 
         Properties props = new Properties();
         props.load(reader);

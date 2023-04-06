@@ -4,6 +4,7 @@ package com.github.mrglassdanny.domsa;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptRepository;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.client.SqlClient;
+import com.github.mrglassdanny.domsa.util.FileUtil;
 import com.google.gson.*;
 import io.javalin.Javalin;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -11,6 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import java.io.FileReader;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
@@ -38,6 +40,7 @@ public class Main {
 
         registerApis(app);
         registerKafkaListeners();
+        registerJobs();
     }
 
     private static void init() throws Exception {
@@ -52,11 +55,23 @@ public class Main {
 
     private static void registerApis(Javalin app) throws Exception {
 
-        for (var entry : DomsaScriptRepository.apis.entrySet()) {
+        JsonArray configArr = JsonParser.parseString(FileUtil.readFile("config/api.json")).getAsJsonArray();
 
-            var path = entry.getKey();
-            var script = entry.getValue();
+        final String basePath = "ds/api/";
 
+        for (var config : configArr) {
+
+            var configObj = config.getAsJsonObject();
+
+            var ds = configObj.get("ds").getAsString();
+            ds = ds.substring(0, ds.lastIndexOf('.'));
+            var path = configObj.get("path").getAsString();
+            path = basePath + path;
+            var method = configObj.get("method").getAsString();
+
+            var script = DomsaScriptRepository.scripts.get(ds);
+
+            // TODO
             app.post(path, ctx -> {
                 ctx.contentType("application/json");
 
@@ -81,19 +96,26 @@ public class Main {
 
     private static void registerKafkaListeners() throws Exception {
 
-        for (var entry : DomsaScriptRepository.kafkaListeners.entrySet()) {
+        JsonArray configArr = JsonParser.parseString(FileUtil.readFile("config/kafka.json")).getAsJsonArray();
 
-            var path = entry.getKey();
-            var script = entry.getValue();
+        for (var config : configArr) {
 
-            var topic = path.substring(path.lastIndexOf('/') + 1);
+            var configObj = config.getAsJsonObject();
+
+            var ds = configObj.get("ds").getAsString();
+            var topic = configObj.get("topic").getAsString();
+            var groupId = configObj.get("groupId").getAsString();
+            var clientId = Environment.properties.get("appName");
+
+            var script = DomsaScriptRepository.scripts.get(ds);
 
             CompletableFuture.runAsync(() -> {
 
                 Properties props = new Properties();
                 {
                     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.properties.get("bootstrapServer"));
-                    props.put(ConsumerConfig.GROUP_ID_CONFIG, Environment.properties.get("appName"));
+                    props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+                    props.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
                     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
                     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
                     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
@@ -113,5 +135,9 @@ public class Main {
                 }
             });
         }
+    }
+
+    private static void registerJobs() throws Exception {
+
     }
 }

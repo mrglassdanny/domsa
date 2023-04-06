@@ -1,0 +1,7 @@
+[
+  {
+    "ds": "ds/testApi.ds",
+    "path": "testApi",
+    "method": "POST"
+  }
+]

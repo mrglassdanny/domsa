@@ -1,0 +1,7 @@
+[
+  {
+    "ds": "ds/testKafkaListener.ds",
+    "topic": "quickstart-events",
+    "groupId": "test-group-id"
+  }
+]
