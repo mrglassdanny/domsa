@@ -15,19 +15,9 @@ fnArgExpr: expr | jsonArr | jsonObj;
 
 fnExpr: Id LeftParen (fnArgExpr (Comma fnArgExpr)*)? RightParen Question?;
 
-dsIdExpr: Id ColonColon Id (ColonColon Id)*;
-
-dsArgExpr: jsonObj;
-
-dsExpr: dsIdExpr LeftParen dsArgExpr RightParen Question?;
-
-sqlExpr: Sql FormatString Question?;
-
 baseExpr
     : idExpr
     | fnExpr
-    | dsExpr
-    | sqlExpr
     | Number
     | String
     | FormatString
@@ -93,8 +83,6 @@ stmt
     |   condStmt
     |   iterStmt
     |   fnStmt
-    |   dsStmt
-    |   sqlStmt
     |   eos)
       eos?
     ;
@@ -112,14 +100,6 @@ iterStmt
 
 fnStmt
     : fnExpr
-    ;
-
-dsStmt
-    : dsExpr
-    ;
-
-sqlStmt
-    : sqlExpr
     ;
 
 nestStmt
@@ -141,7 +121,6 @@ If : 'if';
 In : 'in';
 Null: 'null';
 True: 'true';
-Sql: 'sql';
 
 LeftParen : '(';
 RightParen : ')';

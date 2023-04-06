@@ -26,8 +26,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\{.*?}", Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern SQL_SELECT_PATTERN = Pattern.compile("select", Pattern.CASE_INSENSITIVE);
-
     Stack<HashMap<String, JsonElement>> scopes;
 
     public DomsaScriptInterpreter() {
@@ -176,102 +174,20 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         String fnName = ctx.Id().getText();
 
-        ArrayList<JsonElement> visitedFnArgExprs = new ArrayList<>();
+        ArrayList<JsonElement> fnArgs = new ArrayList<>();
         for (var fnArgExpr : ctx.fnArgExpr()) {
-            visitedFnArgExprs.add(this.visitFnArgExpr(fnArgExpr));
+            fnArgs.add(this.visitFnArgExpr(fnArgExpr));
         }
 
         boolean catchErr = ctx.Question() != null;
 
         try {
-            return FnDispatcher.exec(fnName, visitedFnArgExprs);
+            return FnDispatcher.exec(fnName, fnArgs);
         } catch (Exception fnException) {
             if (!catchErr) {
                 throw new RuntimeException(fnException.getMessage());
             }
             return JsonNull.INSTANCE;
-        }
-    }
-
-    @Override
-    public JsonObject visitDsArgExpr(DomsaScriptParser.DsArgExprContext ctx) {
-        return this.visitJsonObj(ctx.jsonObj()).getAsJsonObject();
-    }
-
-    @Override
-    public JsonObject visitDsExpr(DomsaScriptParser.DsExprContext ctx) {
-        var exprText = ctx.dsIdExpr().getText();
-        var name = exprText.replace("::", "/");
-        var req = this.visitDsArgExpr(ctx.dsArgExpr());
-        boolean catchErr = ctx.Question() != null;
-        try {
-            var script = DomsaScriptRepository.scripts.get(name);
-            if (script == null) {
-                throw new RuntimeException("'" + exprText + "' script does not exist");
-            }
-            return DomsaScriptInterpreter.exec(script, req);
-        } catch (Exception operException) {
-            if (!catchErr) {
-                throw new RuntimeException(operException.getMessage());
-            }
-
-            return new JsonObject();
-        }
-    }
-
-    @Override
-    public JsonArray visitSqlExpr(DomsaScriptParser.SqlExprContext ctx) {
-        boolean catchErr = ctx.Question() != null;
-        try {
-            var fmtStr = this.evalFormatString(ctx.FormatString().getText());
-
-            var res = new JsonArray();
-            {
-                Matcher selectMatcher = SQL_SELECT_PATTERN.matcher(fmtStr);
-
-                if (selectMatcher.find()) {
-
-                    var rows = SqlClient.execQuery(fmtStr);
-                    var cols = rows.getMetaData();
-
-                    while (rows.next()) {
-                        var obj = new JsonObject();
-                        for (int colIdx = 1; colIdx <= cols.getColumnCount(); colIdx++) {
-                            var col = cols.getColumnName(colIdx);
-
-                            if (rows.getObject(colIdx) == null) {
-                                obj.add(col, JsonNull.INSTANCE);
-                            } else {
-                                switch (cols.getColumnType(colIdx)) {
-                                    case 0 -> // Null
-                                            obj.add(col, JsonNull.INSTANCE);
-                                    case 16 -> // Boolean
-                                            obj.add(col, new JsonPrimitive(rows.getBoolean(colIdx)));
-                                    case -5, 5, 2, -8, -6, 4, -7 -> // Int
-                                            obj.add(col, new JsonPrimitive(rows.getInt(colIdx)));
-                                    case 3, 6, 8 -> // Double
-                                            obj.add(col, new JsonPrimitive(rows.getDouble(colIdx)));
-                                    case 7 -> // Real
-                                            obj.add(col, new JsonPrimitive(rows.getBigDecimal(colIdx)));
-                                    default -> obj.add(col, new JsonPrimitive(rows.getObject(colIdx).toString()));
-                                }
-                            }
-                        }
-                        res.add(obj);
-                    }
-                    rows.close();
-
-                } else {
-                    SqlClient.exec(fmtStr);
-                }
-            }
-            return res;
-        } catch (Exception operException) {
-            if (!catchErr) {
-                throw new RuntimeException(operException.getMessage());
-            }
-
-            return new JsonArray();
         }
     }
 
@@ -283,10 +199,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitIdExpr((ctx.idExpr()));
         } else if (ctx.fnExpr() != null) {
             return this.visitFnExpr(ctx.fnExpr());
-        } else if (ctx.dsExpr() != null) {
-            return this.visitDsExpr(ctx.dsExpr());
-        } else if (ctx.sqlExpr() != null) {
-            return this.visitSqlExpr(ctx.sqlExpr());
         } else if (ctx.Number() != null) {
             return new JsonPrimitive(Double.parseDouble(ctx.Number().getText()));
         } else if (ctx.String() != null) {
@@ -591,10 +503,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitIterStmt(ctx.iterStmt());
         } else if (ctx.fnStmt() != null) {
             return this.visitFnStmt(ctx.fnStmt());
-        } else if (ctx.dsStmt() != null) {
-            return this.visitDsStmt(ctx.dsStmt());
-        } else if (ctx.sqlStmt() != null) {
-            return this.visitSqlStmt(ctx.sqlStmt());
         }
 
         return JsonNull.INSTANCE;
@@ -650,16 +558,6 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public JsonElement visitFnStmt(DomsaScriptParser.FnStmtContext ctx) {
         return this.visitFnExpr(ctx.fnExpr());
-    }
-
-    @Override
-    public JsonElement visitDsStmt(DomsaScriptParser.DsStmtContext ctx) {
-        return this.visitDsExpr(ctx.dsExpr());
-    }
-
-    @Override
-    public JsonElement visitSqlStmt(DomsaScriptParser.SqlStmtContext ctx) {
-        return this.visitSqlExpr(ctx.sqlExpr());
     }
 
     @Override

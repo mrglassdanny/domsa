@@ -1,5 +1,8 @@
 package com.github.mrglassdanny.domsa.lang.fn;
 
+import com.github.mrglassdanny.domsa.client.SqlClient;
+import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
+import com.github.mrglassdanny.domsa.lang.DomsaScriptRepository;
 import com.google.gson.*;
 
 import java.util.ArrayList;
@@ -78,9 +81,17 @@ public class FnDispatcher {
                     default -> throw new RuntimeException("'formatDate' function expects less than 3 arguments");
                 };
             }
+            case "sql" -> {
+                validateArgumentCount(fnName, fnArgCnt, 1);
+                return SqlRepo.exec(fnArgs.get(0).getAsString());
+            }
             case "buildWhere" -> {
                 validateArgumentCount(fnName, fnArgCnt, 1);
                 return new JsonPrimitive(SqlRepo.buildWhere(fnArgs.get(0).getAsJsonObject()));
+            }
+            case "ds" -> {
+                validateArgumentCount(fnName, fnArgCnt, 2);
+                return DsRepo.exec(fnArgs.get(0).getAsString(), fnArgs.get(1).getAsJsonObject());
             }
             default -> throw new RuntimeException("'" + fnName + "' is not a recognized function");
         }

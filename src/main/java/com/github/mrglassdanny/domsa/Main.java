@@ -37,7 +37,7 @@ public class Main {
                 .start(Integer.parseInt(Environment.properties.get("port")));
 
         registerApis(app);
-        registerConsumers();
+        registerKafkaListeners();
     }
 
     private static void init() throws Exception {
@@ -79,9 +79,9 @@ public class Main {
         }
     }
 
-    private static void registerConsumers() throws Exception {
+    private static void registerKafkaListeners() throws Exception {
 
-        for (var entry : DomsaScriptRepository.consumers.entrySet()) {
+        for (var entry : DomsaScriptRepository.kafkaListeners.entrySet()) {
 
             var path = entry.getKey();
             var script = entry.getValue();

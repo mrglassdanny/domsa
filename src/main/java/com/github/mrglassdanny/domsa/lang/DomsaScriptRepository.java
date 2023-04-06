@@ -8,17 +8,17 @@ import java.util.HashMap;
 public class DomsaScriptRepository {
     public static HashMap<String, String> scripts = new HashMap<>();
     public static HashMap<String, String> apis = new HashMap<>();
-    public static HashMap<String, String> consumers = new HashMap<>();
+    public static HashMap<String, String> kafkaListeners = new HashMap<>();
 
     public static void init() throws Exception {
-        File dir = new File("ds/private");
+        File dir = new File("dssrc/");
         addScripts(dir.listFiles(), scripts);
 
-        dir = new File("ds/public/api/");
+        dir = new File("dssrc/api/");
         addScripts(dir.listFiles(), apis);
 
-        dir = new File("ds/public/consumer/");
-        addScripts(dir.listFiles(), consumers);
+        dir = new File("dssrc/kafka/");
+        addScripts(dir.listFiles(), kafkaListeners);
     }
 
     private static void addScripts(File[] files, HashMap<String, String> repo) throws Exception {

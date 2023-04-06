@@ -31,30 +31,6 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFnExpr(DomsaScriptParser.FnExprContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#dsIdExpr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDsIdExpr(DomsaScriptParser.DsIdExprContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#dsArgExpr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDsArgExpr(DomsaScriptParser.DsArgExprContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#dsExpr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDsExpr(DomsaScriptParser.DsExprContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#sqlExpr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitSqlExpr(DomsaScriptParser.SqlExprContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#baseExpr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -174,18 +150,6 @@ public interface DomsaScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFnStmt(DomsaScriptParser.FnStmtContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#dsStmt}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDsStmt(DomsaScriptParser.DsStmtContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DomsaScriptParser#sqlStmt}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitSqlStmt(DomsaScriptParser.SqlStmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DomsaScriptParser#nestStmt}.
 	 * @param ctx the parse tree
