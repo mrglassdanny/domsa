@@ -9,7 +9,7 @@ public class DomsaScriptRepository {
     public static HashMap<String, String> scripts = new HashMap<>();
 
     public static void init() throws Exception {
-        File dir = new File("ds/");
+        File dir = new File("../ds/");
         addScripts(dir.listFiles(), scripts);
     }
 

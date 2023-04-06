@@ -12,6 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import java.io.File;
 import java.io.FileReader;
 import java.time.Duration;
 import java.util.Collections;
@@ -38,9 +39,17 @@ public class Main {
                 })
                 .start(Integer.parseInt(Environment.properties.get("port")));
 
-        registerApis(app);
-        registerKafkaListeners();
-        registerJobs();
+        try {
+            registerApis(app);
+            registerKafkaListeners();
+            registerJobs();
+        } catch (Exception e) {
+            System.out.println("Failure to register: " + e.getMessage());
+        }
+
+
+        String dir = System.getProperty("user.dir");
+        System.out.println(dir);
     }
 
     private static void init() throws Exception {
@@ -55,7 +64,7 @@ public class Main {
 
     private static void registerApis(Javalin app) throws Exception {
 
-        JsonArray configArr = JsonParser.parseString(FileUtil.readFile("config/api.json")).getAsJsonArray();
+        JsonArray configArr = JsonParser.parseString(FileUtil.readFile("../config/api.json")).getAsJsonArray();
 
         final String basePath = "ds/api/";
 
@@ -96,7 +105,7 @@ public class Main {
 
     private static void registerKafkaListeners() throws Exception {
 
-        JsonArray configArr = JsonParser.parseString(FileUtil.readFile("config/kafka.json")).getAsJsonArray();
+        JsonArray configArr = JsonParser.parseString(FileUtil.readFile("../config/kafka.json")).getAsJsonArray();
 
         for (var config : configArr) {
 
