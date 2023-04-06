@@ -27,6 +27,9 @@ public class ExecFn implements Fn {
         var path = args.get(0).getAsString();
         var req = args.get(1).getAsJsonObject();
 
+        if (path.contains("."))
+            path = path.substring(0, path.lastIndexOf('.'));
+
         var script = DsRepository.scripts.get(path);
 
         if (script == null) {

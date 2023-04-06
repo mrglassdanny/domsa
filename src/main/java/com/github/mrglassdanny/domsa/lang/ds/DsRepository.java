@@ -23,6 +23,7 @@ public class DsRepository {
 
                 String path = file.getPath().replace('\\', '/');
                 path = path.substring(0, path.lastIndexOf('.'));
+                path = path.substring(path.indexOf("/ds/") + 4);
 
                 repo.put(path, script);
             }
