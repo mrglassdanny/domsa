@@ -13,7 +13,7 @@ idExpr
 
 fnArgExpr: expr | jsonArr | jsonObj;
 
-fnExpr: Id LeftParen (fnArgExpr (Comma fnArgExpr)*)? RightParen Question?;
+fnExpr: (Id ColonColon Id) LeftParen (fnArgExpr (Comma fnArgExpr)*)? RightParen Question?;
 
 baseExpr
     : idExpr

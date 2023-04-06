@@ -172,7 +172,8 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public JsonElement visitFnExpr(DomsaScriptParser.FnExprContext ctx) {
 
-        String fnName = ctx.Id().getText();
+        String moduleName = ctx.Id(0).getText();
+        String fnName = ctx.Id(1).getText();
 
         ArrayList<JsonElement> fnArgs = new ArrayList<>();
         for (var fnArgExpr : ctx.fnArgExpr()) {
@@ -182,7 +183,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         boolean catchErr = ctx.Question() != null;
 
         try {
-            return FnDispatcher.exec(fnName, fnArgs);
+            return FnDispatcher.exec(moduleName, fnName, fnArgs);
         } catch (Exception fnException) {
             if (!catchErr) {
                 throw new RuntimeException(fnException.getMessage());
