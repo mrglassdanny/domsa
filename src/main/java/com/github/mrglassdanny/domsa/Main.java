@@ -1,7 +1,6 @@
 package com.github.mrglassdanny.domsa;
 
 
-import com.github.mrglassdanny.domsa.lang.ds.DsRepository;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.client.SqlClient;
 import com.github.mrglassdanny.domsa.lang.fn.FnRepository;
@@ -54,7 +53,7 @@ public class Main {
     private static void init() throws Exception {
         Environment.init();
         FnRepository.init();
-        DsRepository.init();
+        Repository.init();
         SqlClient.init(Environment.properties.get("databaseUrl"));
     }
 
@@ -64,23 +63,11 @@ public class Main {
 
     private static void registerApis(Javalin app) throws Exception {
 
-        JsonArray configArr = JsonParser.parseString(FileUtil.readFile("../config/api.json")).getAsJsonArray();
+        for (var entry : Repository.apis.entrySet()) {
 
-        final String basePath = "ds/api/";
+            var path = entry.getKey();
+            var script = entry.getValue();
 
-        for (var config : configArr) {
-
-            var configObj = config.getAsJsonObject();
-
-            var ds = configObj.get("ds").getAsString();
-            ds = ds.substring(0, ds.lastIndexOf('.'));
-            var path = configObj.get("path").getAsString();
-            path = basePath + path;
-            var method = configObj.get("method").getAsString();
-
-            var script = DsRepository.scripts.get(ds);
-
-            // TODO
             app.post(path, ctx -> {
                 ctx.contentType("application/json");
 
@@ -105,27 +92,20 @@ public class Main {
 
     private static void registerKafkaListeners() throws Exception {
 
-        JsonArray configArr = JsonParser.parseString(FileUtil.readFile("../config/kafka.json")).getAsJsonArray();
+        for (var entry : Repository.events.entrySet()) {
 
-        for (var config : configArr) {
+            var path = entry.getKey();
+            var script = entry.getValue();
 
-            var configObj = config.getAsJsonObject();
-
-            var ds = configObj.get("ds").getAsString();
-            ds = ds.substring(0, ds.lastIndexOf('.'));
-            var topic = configObj.get("topic").getAsString();
-            var groupId = configObj.get("groupId").getAsString();
-            var clientId = Environment.properties.get("appName");
-
-            var script = DsRepository.scripts.get(ds);
+            var topic = path.substring(path.lastIndexOf('/') + 1);
 
             CompletableFuture.runAsync(() -> {
 
                 Properties props = new Properties();
                 {
                     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.properties.get("bootstrapServer"));
-                    props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-                    props.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
+                    props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group-1");
+                    props.put(ConsumerConfig.CLIENT_ID_CONFIG, Environment.properties.get("appName"));
                     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
                     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
                     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");

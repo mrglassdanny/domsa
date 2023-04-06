@@ -1,7 +1,7 @@
 package com.github.mrglassdanny.domsa.lang.fn.ds;
 
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
-import com.github.mrglassdanny.domsa.lang.ds.DsRepository;
+import com.github.mrglassdanny.domsa.Repository;
 import com.github.mrglassdanny.domsa.lang.fn.Fn;
 import com.github.mrglassdanny.domsa.lang.fn.FnArgType;
 import com.github.mrglassdanny.domsa.lang.fn.FnUtil;
@@ -30,10 +30,10 @@ public class ExecFn implements Fn {
         if (path.contains("."))
             path = path.substring(0, path.lastIndexOf('.'));
 
-        var script = DsRepository.scripts.get(path);
+        var script = Repository.scripts.get(path);
 
         if (script == null) {
-            throw new RuntimeException(path + ".ds does not exist");
+            throw new RuntimeException(path + ".ds script does not exist");
         }
 
         return DomsaScriptInterpreter.exec(script, req);
