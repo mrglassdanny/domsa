@@ -4,6 +4,7 @@ package com.github.mrglassdanny.domsa;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptRepository;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.client.SqlClient;
+import com.github.mrglassdanny.domsa.lang.fn.FnRepository;
 import com.github.mrglassdanny.domsa.util.FileUtil;
 import com.google.gson.*;
 import io.javalin.Javalin;
@@ -54,6 +55,7 @@ public class Main {
 
     private static void init() throws Exception {
         Environment.init();
+        FnRepository.init();
         DomsaScriptRepository.init();
         SqlClient.init(Environment.properties.get("databaseUrl"));
     }

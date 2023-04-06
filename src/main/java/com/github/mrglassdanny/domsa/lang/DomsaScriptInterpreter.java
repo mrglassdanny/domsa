@@ -1,11 +1,10 @@
 package com.github.mrglassdanny.domsa.lang;
 
-import com.github.mrglassdanny.domsa.client.SqlClient;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptBaseVisitor;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptLexer;
 import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.lang.err.DomsaScriptSyntaxErrorListener;
-import com.github.mrglassdanny.domsa.lang.fn.FnDispatcher;
+import com.github.mrglassdanny.domsa.lang.fn.FnRepository;
 import com.google.gson.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -183,7 +182,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         boolean catchErr = ctx.Question() != null;
 
         try {
-            return FnDispatcher.exec(moduleName, fnName, fnArgs);
+            return FnRepository.exec(moduleName, fnName, fnArgs);
         } catch (Exception fnException) {
             if (!catchErr) {
                 throw new RuntimeException(fnException.getMessage());

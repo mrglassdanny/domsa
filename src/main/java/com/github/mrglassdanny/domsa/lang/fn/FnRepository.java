@@ -13,7 +13,7 @@ import com.google.gson.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class FnDispatcher {
+public class FnRepository {
 
     private static HashMap<String, Module> modules = new HashMap<>();
 
@@ -55,7 +55,14 @@ public class FnDispatcher {
         }
 
         fn.validateArgs(fnArgs);
-        return fn.exec(fnArgs);
+
+        var res = fn.exec(fnArgs);
+
+        if (res == null) {
+            res = JsonNull.INSTANCE;
+        }
+
+        return res;
     }
 
 }
