@@ -25,7 +25,7 @@ public class ListFn implements Fn {
     public JsonElement exec(List<JsonElement> args) throws Exception {
         var props = new JsonObject();
 
-        for (var entry : Environment.properties.entrySet()) {
+        for (var entry : Environment.properties().entrySet()) {
             props.addProperty(entry.getKey(), entry.getValue());
         }
 

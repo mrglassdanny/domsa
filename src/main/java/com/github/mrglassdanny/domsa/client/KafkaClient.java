@@ -14,8 +14,8 @@ public class KafkaClient {
 
     private static KafkaProducer<String, String> createProducer() {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.properties.get("bootstrapServer"));
-        props.put(ProducerConfig.CLIENT_ID_CONFIG, Environment.properties.get("appName"));
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.get("kafka.bootstrap.servers"));
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, Environment.get("name"));
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         return new KafkaProducer<>(props);

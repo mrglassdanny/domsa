@@ -14,7 +14,7 @@ public class DateUtil {
     }
 
     public static String getDefaultDateFormat() {
-        String fmt = Environment.properties.get("defaultDateFormat");
+        String fmt = Environment.get("defaultDateFormat");
         if (fmt == null) {
             fmt = DEFAULT_DATE_FORMAT;
         }
@@ -22,7 +22,7 @@ public class DateUtil {
     }
 
     public static String getDefaultDateTimeFormat() {
-        String fmt = Environment.properties.get("defaultDateTimeFormat");
+        String fmt = Environment.get("defaultDateTimeFormat");
         if (fmt == null) {
             fmt = DEFAULT_DATE_TIME_FORMAT;
         }

@@ -24,6 +24,6 @@ public class GetFn implements Fn {
     @Override
     public JsonElement exec(List<JsonElement> args) throws Exception {
         var prop = args.get(0).getAsString();
-        return new JsonPrimitive(Environment.properties.get(prop));
+        return new JsonPrimitive(Environment.get(prop));
     }
 }

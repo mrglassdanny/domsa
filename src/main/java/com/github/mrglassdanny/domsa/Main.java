@@ -34,7 +34,7 @@ public class Main {
                     ctx.result(res == null ? JsonNull.INSTANCE.toString() : res.toString());
                     ctx.status(200);
                 })
-                .start(Integer.parseInt(Environment.properties.get("port")));
+                .start(Integer.parseInt(Environment.get("port")));
 
         registerApis(app);
         registerKafkaListeners();
@@ -44,7 +44,7 @@ public class Main {
         Environment.init();
         FnRepository.init();
         Repository.init();
-        SqlClient.init(Environment.properties.get("databaseUrl"));
+        SqlClient.init(Environment.get("databaseUrl"));
     }
 
     private static void cleanup() throws Exception {
@@ -91,10 +91,9 @@ public class Main {
 
                 Properties props = new Properties();
                 {
-                    // TODO
-                    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.properties.get("bootstrapServer"));
-                    props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group-1");
-                    props.put(ConsumerConfig.CLIENT_ID_CONFIG, Environment.properties.get("appName"));
+                    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.get("kafka.bootstrap.servers"));
+                    props.put(ConsumerConfig.CLIENT_ID_CONFIG, Environment.get("name"));
+                    props.put(ConsumerConfig.GROUP_ID_CONFIG, "group-1");
                     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
                     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
                     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
