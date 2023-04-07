@@ -22,6 +22,10 @@ public class Repository {
     }
 
     private static void addScripts(File[] files, HashMap<String, String> repo, boolean excludeStartDir) throws Exception {
+        if (files == null) {
+            return;
+        }
+
         for (File file : files) {
             if (file.isDirectory()) {
                 addScripts(file.listFiles(), repo, excludeStartDir);
