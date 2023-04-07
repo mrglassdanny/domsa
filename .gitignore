@@ -1,5 +1,8 @@
-# domsa script files
+# domsa directory/files
 *.ds
+api/
+event/
+script/
 
 # Compiled class file
 *.class
