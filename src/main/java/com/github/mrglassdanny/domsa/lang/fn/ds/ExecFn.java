@@ -36,6 +36,6 @@ public class ExecFn implements Fn {
             throw new RuntimeException(path + " script does not exist");
         }
 
-        return DomsaScriptInterpreter.exec(path, script, req);
+        return DomsaScriptInterpreter.execNoCatch(path, script, req);
     }
 }

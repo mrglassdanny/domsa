@@ -74,6 +74,25 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         }
     }
 
+    public static JsonElement execNoCatch(String path, String script, JsonObject req) throws Exception {
+
+        var parser = new DomsaScriptParser(
+                new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
+        var errListener = new DomsaScriptSyntaxErrorListener();
+        parser.addErrorListener(errListener);
+        parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
+
+        var ctx = parser.script();
+
+        // Make sure we check for syntax errors before we pass to interpreter
+        if (!errListener.syntaxErrors.isEmpty()) {
+            thrwErr(path, ctx.start, "SyntaxError: " + errListener.syntaxErrors.get(0).toString());
+            return JsonNull.INSTANCE;
+        } else {
+            return new DomsaScriptInterpreter(path, req).visitScript(ctx);
+        }
+    }
+
     private HashMap<String, JsonElement> getScope(String name) {
         // Purposely starting search at highest level scope
         for (int scopeIdx = this.scopes.size() - 1; scopeIdx >= 0; scopeIdx--) {
