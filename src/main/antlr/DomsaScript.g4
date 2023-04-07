@@ -83,6 +83,7 @@ stmt
     |   condStmt
     |   iterStmt
     |   fnStmt
+    |   expectStmt
     |   eos)
       eos?
     ;
@@ -100,6 +101,10 @@ iterStmt
 
 fnStmt
     : fnExpr
+    ;
+
+expectStmt
+    : idExpr Question
     ;
 
 nestStmt

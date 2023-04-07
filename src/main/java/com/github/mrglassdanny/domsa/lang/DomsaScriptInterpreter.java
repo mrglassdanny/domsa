@@ -502,6 +502,10 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return this.visitIterStmt(ctx.iterStmt());
         } else if (ctx.fnStmt() != null) {
             return this.visitFnStmt(ctx.fnStmt());
+        } else if (ctx.expectStmt() != null) {
+            return this.visitExpectStmt(ctx.expectStmt());
+        } else {
+            thrwErr(this.path, ctx.start, "unsupported statement");
         }
 
         return JsonNull.INSTANCE;
@@ -557,6 +561,18 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     @Override
     public JsonElement visitFnStmt(DomsaScriptParser.FnStmtContext ctx) {
         return this.visitFnExpr(ctx.fnExpr());
+    }
+
+    @Override
+    public JsonElement visitExpectStmt(DomsaScriptParser.ExpectStmtContext ctx) {
+        var idText = ctx.idExpr().getText();
+        var idVal = this.visitIdExpr(ctx.idExpr());
+
+        if (idVal == null || idVal.isJsonNull()) {
+            thrwErr(this.path, ctx.start, "expected '" + idText + "' to not be null");
+        }
+
+        return idVal;
     }
 
     @Override
