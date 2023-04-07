@@ -33,7 +33,7 @@ public class ExecFn implements Fn {
         var script = Repository.scripts.get(path);
 
         if (script == null) {
-            throw new RuntimeException(path + ".ds script does not exist");
+            throw new RuntimeException(path + " script does not exist");
         }
 
         return DomsaScriptInterpreter.exec(path, script, req);

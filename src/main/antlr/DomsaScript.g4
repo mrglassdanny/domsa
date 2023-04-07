@@ -104,7 +104,7 @@ fnStmt
     ;
 
 expectStmt
-    : idExpr Question
+    : idExpr Exclamation
     ;
 
 nestStmt
@@ -147,9 +147,9 @@ Mod : '%';
 
 And : 'and';
 Or : 'or';
-Not : '!'; // TODO
 
 Question : '?';
+Exclamation : '!';
 Colon : ':';
 ColonColon: '::';
 Comma : ',';

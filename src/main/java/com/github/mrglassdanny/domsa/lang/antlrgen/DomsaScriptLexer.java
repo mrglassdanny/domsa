@@ -22,7 +22,7 @@ public class DomsaScriptLexer extends Lexer {
 		Elif=1, Else=2, False=3, For=4, If=5, In=6, Null=7, True=8, LeftParen=9, 
 		RightParen=10, LeftBracket=11, RightBracket=12, LeftBrace=13, RightBrace=14, 
 		Less=15, LessEqual=16, Greater=17, GreaterEqual=18, Plus=19, Minus=20, 
-		Star=21, Div=22, Mod=23, And=24, Or=25, Not=26, Question=27, Colon=28, 
+		Star=21, Div=22, Mod=23, And=24, Or=25, Question=26, Exclamation=27, Colon=28, 
 		ColonColon=29, Comma=30, Assign=31, Equal=32, NotEqual=33, Dot=34, Id=35, 
 		Number=36, DigitSequence=37, FormatString=38, String=39, Whitespace=40, 
 		Newline=41, BlockComment=42, LineComment=43;
@@ -39,7 +39,7 @@ public class DomsaScriptLexer extends Lexer {
 			"Elif", "Else", "False", "For", "If", "In", "Null", "True", "LeftParen", 
 			"RightParen", "LeftBracket", "RightBracket", "LeftBrace", "RightBrace", 
 			"Less", "LessEqual", "Greater", "GreaterEqual", "Plus", "Minus", "Star", 
-			"Div", "Mod", "And", "Or", "Not", "Question", "Colon", "ColonColon", 
+			"Div", "Mod", "And", "Or", "Question", "Exclamation", "Colon", "ColonColon", 
 			"Comma", "Assign", "Equal", "NotEqual", "Dot", "Id", "IdNondigit", "Nondigit", 
 			"Number", "DigitSequence", "Digit", "FormatString", "String", "StringEsc", 
 			"Unicode", "Hex", "SafeCodePoint", "Whitespace", "Newline", "BlockComment", 
@@ -52,7 +52,7 @@ public class DomsaScriptLexer extends Lexer {
 		return new String[] {
 			null, "'elif'", "'else'", "'false'", "'for'", "'if'", "'in'", "'null'", 
 			"'true'", "'('", "')'", "'['", "']'", "'{'", "'}'", "'<'", "'<='", "'>'", 
-			"'>='", "'+'", "'-'", "'*'", "'/'", "'%'", "'and'", "'or'", "'!'", "'?'", 
+			"'>='", "'+'", "'-'", "'*'", "'/'", "'%'", "'and'", "'or'", "'?'", "'!'", 
 			"':'", "'::'", "','", "'='", "'=='", "'!='", "'.'"
 		};
 	}
@@ -62,7 +62,7 @@ public class DomsaScriptLexer extends Lexer {
 			null, "Elif", "Else", "False", "For", "If", "In", "Null", "True", "LeftParen", 
 			"RightParen", "LeftBracket", "RightBracket", "LeftBrace", "RightBrace", 
 			"Less", "LessEqual", "Greater", "GreaterEqual", "Plus", "Minus", "Star", 
-			"Div", "Mod", "And", "Or", "Not", "Question", "Colon", "ColonColon", 
+			"Div", "Mod", "And", "Or", "Question", "Exclamation", "Colon", "ColonColon", 
 			"Comma", "Assign", "Equal", "NotEqual", "Dot", "Id", "Number", "DigitSequence", 
 			"FormatString", "String", "Whitespace", "Newline", "BlockComment", "LineComment"
 		};
@@ -186,7 +186,7 @@ public class DomsaScriptLexer extends Lexer {
 		",\2\2\u00a6,\3\2\2\2\u00a7\u00a8\7\61\2\2\u00a8.\3\2\2\2\u00a9\u00aa\7"+
 		"\'\2\2\u00aa\60\3\2\2\2\u00ab\u00ac\7c\2\2\u00ac\u00ad\7p\2\2\u00ad\u00ae"+
 		"\7f\2\2\u00ae\62\3\2\2\2\u00af\u00b0\7q\2\2\u00b0\u00b1\7t\2\2\u00b1\64"+
-		"\3\2\2\2\u00b2\u00b3\7#\2\2\u00b3\66\3\2\2\2\u00b4\u00b5\7A\2\2\u00b5"+
+		"\3\2\2\2\u00b2\u00b3\7A\2\2\u00b3\66\3\2\2\2\u00b4\u00b5\7#\2\2\u00b5"+
 		"8\3\2\2\2\u00b6\u00b7\7<\2\2\u00b7:\3\2\2\2\u00b8\u00b9\7<\2\2\u00b9\u00ba"+
 		"\7<\2\2\u00ba<\3\2\2\2\u00bb\u00bc\7.\2\2\u00bc>\3\2\2\2\u00bd\u00be\7"+
 		"?\2\2\u00be@\3\2\2\2\u00bf\u00c0\7?\2\2\u00c0\u00c1\7?\2\2\u00c1B\3\2"+

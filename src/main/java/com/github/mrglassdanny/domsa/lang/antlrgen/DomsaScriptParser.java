@@ -22,7 +22,7 @@ public class DomsaScriptParser extends Parser {
 		Elif=1, Else=2, False=3, For=4, If=5, In=6, Null=7, True=8, LeftParen=9, 
 		RightParen=10, LeftBracket=11, RightBracket=12, LeftBrace=13, RightBrace=14, 
 		Less=15, LessEqual=16, Greater=17, GreaterEqual=18, Plus=19, Minus=20, 
-		Star=21, Div=22, Mod=23, And=24, Or=25, Not=26, Question=27, Colon=28, 
+		Star=21, Div=22, Mod=23, And=24, Or=25, Question=26, Exclamation=27, Colon=28, 
 		ColonColon=29, Comma=30, Assign=31, Equal=32, NotEqual=33, Dot=34, Id=35, 
 		Number=36, DigitSequence=37, FormatString=38, String=39, Whitespace=40, 
 		Newline=41, BlockComment=42, LineComment=43;
@@ -48,7 +48,7 @@ public class DomsaScriptParser extends Parser {
 		return new String[] {
 			null, "'elif'", "'else'", "'false'", "'for'", "'if'", "'in'", "'null'", 
 			"'true'", "'('", "')'", "'['", "']'", "'{'", "'}'", "'<'", "'<='", "'>'", 
-			"'>='", "'+'", "'-'", "'*'", "'/'", "'%'", "'and'", "'or'", "'!'", "'?'", 
+			"'>='", "'+'", "'-'", "'*'", "'/'", "'%'", "'and'", "'or'", "'?'", "'!'", 
 			"':'", "'::'", "','", "'='", "'=='", "'!='", "'.'"
 		};
 	}
@@ -58,7 +58,7 @@ public class DomsaScriptParser extends Parser {
 			null, "Elif", "Else", "False", "For", "If", "In", "Null", "True", "LeftParen", 
 			"RightParen", "LeftBracket", "RightBracket", "LeftBrace", "RightBrace", 
 			"Less", "LessEqual", "Greater", "GreaterEqual", "Plus", "Minus", "Star", 
-			"Div", "Mod", "And", "Or", "Not", "Question", "Colon", "ColonColon", 
+			"Div", "Mod", "And", "Or", "Question", "Exclamation", "Colon", "ColonColon", 
 			"Comma", "Assign", "Equal", "NotEqual", "Dot", "Id", "Number", "DigitSequence", 
 			"FormatString", "String", "Whitespace", "Newline", "BlockComment", "LineComment"
 		};
@@ -1779,7 +1779,7 @@ public class DomsaScriptParser extends Parser {
 		public IdExprContext idExpr() {
 			return getRuleContext(IdExprContext.class,0);
 		}
-		public TerminalNode Question() { return getToken(DomsaScriptParser.Question, 0); }
+		public TerminalNode Exclamation() { return getToken(DomsaScriptParser.Exclamation, 0); }
 		public ExpectStmtContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1800,7 +1800,7 @@ public class DomsaScriptParser extends Parser {
 			setState(263);
 			idExpr();
 			setState(264);
-			match(Question);
+			match(Exclamation);
 			}
 		}
 		catch (RecognitionException re) {
@@ -1963,7 +1963,7 @@ public class DomsaScriptParser extends Parser {
 		"\2\2\2A?\3\2\2\2A@\3\2\2\2B\5\3\2\2\2CD\7%\2\2DE\7\37\2\2EF\7%\2\2FG\3"+
 		"\2\2\2GP\7\13\2\2HM\5\4\3\2IJ\7 \2\2JL\5\4\3\2KI\3\2\2\2LO\3\2\2\2MK\3"+
 		"\2\2\2MN\3\2\2\2NQ\3\2\2\2OM\3\2\2\2PH\3\2\2\2PQ\3\2\2\2QR\3\2\2\2RT\7"+
-		"\f\2\2SU\7\35\2\2TS\3\2\2\2TU\3\2\2\2U\7\3\2\2\2Vc\5\2\2\2Wc\5\6\4\2X"+
+		"\f\2\2SU\7\34\2\2TS\3\2\2\2TU\3\2\2\2U\7\3\2\2\2Vc\5\2\2\2Wc\5\6\4\2X"+
 		"c\7&\2\2Yc\7)\2\2Zc\7(\2\2[c\7\n\2\2\\c\7\5\2\2]c\7\t\2\2^_\7\13\2\2_"+
 		"`\5\24\13\2`a\7\f\2\2ac\3\2\2\2bV\3\2\2\2bW\3\2\2\2bX\3\2\2\2bY\3\2\2"+
 		"\2bZ\3\2\2\2b[\3\2\2\2b\\\3\2\2\2b]\3\2\2\2b^\3\2\2\2c\t\3\2\2\2di\5\b"+
