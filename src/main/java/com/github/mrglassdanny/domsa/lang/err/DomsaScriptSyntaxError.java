@@ -13,6 +13,6 @@ public class DomsaScriptSyntaxError {
 
     @Override
     public String toString() {
-        return String.format("Line: %d\tCol: %d\tMsg: %s", this.line, this.charPositionInLine, this.msg);
+        return String.format("Line: %d Col: %d Msg: %s", this.line, this.charPositionInLine, this.msg);
     }
 }
