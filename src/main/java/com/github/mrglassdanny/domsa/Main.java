@@ -91,6 +91,7 @@ public class Main {
 
                 Properties props = new Properties();
                 {
+                    // TODO
                     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.properties.get("bootstrapServer"));
                     props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group-1");
                     props.put(ConsumerConfig.CLIENT_ID_CONFIG, Environment.properties.get("appName"));

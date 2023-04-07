@@ -11,13 +11,13 @@ public class Repository {
     public static HashMap<String, String> events = new HashMap<>();
 
     public static void init() throws Exception {
-        File dir = new File("../script");
+        File dir = new File("script");
         addScripts(dir.listFiles(), scripts, true);
 
-        dir = new File("../api");
+        dir = new File("api");
         addScripts(dir.listFiles(), apis, false);
 
-        dir = new File("../event");
+        dir = new File("event");
         addScripts(dir.listFiles(), events, true);
     }
 
@@ -31,7 +31,6 @@ public class Repository {
 
                 String path = file.getPath().replace('\\', '/');
                 path = path.substring(0, path.lastIndexOf('.'));
-                path = path.substring(path.indexOf("../") + 3);
 
                 if (excludeStartDir) {
                     path = path.substring(path.indexOf('/') + 1);
