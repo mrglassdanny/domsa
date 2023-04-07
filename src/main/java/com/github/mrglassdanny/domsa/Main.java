@@ -4,7 +4,6 @@ package com.github.mrglassdanny.domsa;
 import com.github.mrglassdanny.domsa.lang.DomsaScriptInterpreter;
 import com.github.mrglassdanny.domsa.client.SqlClient;
 import com.github.mrglassdanny.domsa.lang.fn.FnRepository;
-import com.github.mrglassdanny.domsa.util.FileUtil;
 import com.google.gson.*;
 import io.javalin.Javalin;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
