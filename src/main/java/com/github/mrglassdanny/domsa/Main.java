@@ -93,7 +93,7 @@ public class Main {
                 {
                     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Environment.get("kafka.bootstrap.servers"));
                     props.put(ConsumerConfig.CLIENT_ID_CONFIG, Environment.get("name"));
-                    props.put(ConsumerConfig.GROUP_ID_CONFIG, "group-1");
+                    props.put(ConsumerConfig.GROUP_ID_CONFIG, Environment.get("name") + "-group");
                     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
                     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
                     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
