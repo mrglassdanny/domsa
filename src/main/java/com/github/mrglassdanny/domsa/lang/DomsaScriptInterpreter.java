@@ -74,7 +74,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         }
     }
 
-    public static JsonElement execNoCatch(String path, String script, JsonObject req) throws Exception {
+    public static JsonElement execNested(String path, String script, JsonObject req) throws Exception {
 
         var parser = new DomsaScriptParser(
                 new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
