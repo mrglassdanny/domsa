@@ -37,17 +37,8 @@ public class Main {
                 })
                 .start(Integer.parseInt(Environment.properties.get("port")));
 
-        try {
-            registerApis(app);
-        } catch (Exception e) {
-            System.out.println("Failure to register apis: " + e.getMessage());
-        }
-
-        try {
-            registerKafkaListeners();
-        } catch (Exception e) {
-            System.out.println("Failure to register kafka listeners: " + e.getMessage());
-        }
+        registerApis(app);
+        registerKafkaListeners();
     }
 
     private static void init() throws Exception {
@@ -73,15 +64,13 @@ public class Main {
 
                 String reqStr = ctx.body();
 
-                JsonObject req = null;
-                JsonObject res = null;
+                JsonElement res;
 
                 try {
-                    req = JsonParser.parseString(reqStr).getAsJsonObject();
+                    var req = JsonParser.parseString(reqStr).getAsJsonObject();
                     res = DomsaScriptInterpreter.exec(script, req);
                 } catch (JsonParseException | IllegalStateException jsonParseException) {
-                    res = new JsonObject();
-                    res.addProperty("requestError", "Expected JsonObject as request");
+                    res = new JsonPrimitive("RequestError: Expected JsonObject as request");
                 }
 
                 ctx.result(res == null ? JsonNull.INSTANCE.toString() : res.toString());
@@ -118,8 +107,7 @@ public class Main {
                         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                         for (var record : records) {
                             var req = JsonParser.parseString(record.value()).getAsJsonObject();
-                            var res = DomsaScriptInterpreter.exec(script, req);
-                            System.out.println(res.toString());
+                            DomsaScriptInterpreter.exec(script, req);
                         }
                     }
                 }

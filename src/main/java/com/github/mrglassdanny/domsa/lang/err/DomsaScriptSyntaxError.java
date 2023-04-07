@@ -10,4 +10,9 @@ public class DomsaScriptSyntaxError {
         this.charPositionInLine = charPositionInLine;
         this.msg = msg;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Line: %d\tCol: %d\tMsg: %s", this.line, this.charPositionInLine, this.msg);
+    }
 }

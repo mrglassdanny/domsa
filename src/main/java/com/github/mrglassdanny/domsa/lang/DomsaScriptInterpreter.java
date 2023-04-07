@@ -37,12 +37,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         var mainScopeVariables = new HashMap<String, JsonElement>(2);
 
         mainScopeVariables.put("req", req);
-        mainScopeVariables.put("res", new JsonObject());
 
         this.scopes.push(mainScopeVariables);
     }
 
-    public static JsonObject exec(String script, JsonObject req) {
+    public static JsonElement exec(String script, JsonObject req) {
 
         var parser = new DomsaScriptParser(
                 new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
@@ -50,33 +49,20 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         parser.addErrorListener(errListener);
         parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 
-        JsonObject res = new JsonObject();
-
         try {
-            var scriptCtx = parser.script();
+            var ctx = parser.script();
 
             // Make sure we check for syntax errors before we pass to interpreter
             if (!errListener.syntaxErrors.isEmpty()) {
-                var errList = new JsonArray();
-                for (var err : errListener.syntaxErrors) {
-                    var errInfo = new JsonObject();
-                    errInfo.addProperty("line", err.line);
-                    errInfo.addProperty("pos", err.charPositionInLine);
-                    errInfo.addProperty("msg", err.msg);
-                    errList.add(errInfo);
-                }
-                res.add("syntaxErrors", errList);
+                return new JsonPrimitive("SyntaxError: " + errListener.syntaxErrors.get(0).toString());
             } else {
-                res = new DomsaScriptInterpreter(req).visitScript(scriptCtx);
+                return new DomsaScriptInterpreter(req).visitScript(ctx);
             }
         } catch (RecognitionException recognitionException) {
-            res.addProperty("recognitionError", recognitionException.getMessage());
+            return new JsonPrimitive("RecognitionError: " + recognitionException.getMessage());
         } catch (RuntimeException interpException) {
-            res = new JsonObject();
-            res.addProperty("runtimeError", interpException.getMessage());
+            return new JsonPrimitive("RuntimeError: " + interpException.getMessage());
         }
-
-        return res;
     }
 
     private HashMap<String, JsonElement> getScope(String name) {
@@ -417,13 +403,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         if (ctx.Dot().isEmpty()) { // non object field
 
             var id = ctx.getText();
-            if (id.equals("res")) {
-                throw new RuntimeException("'res' is immutable");
-            } else if (id.equals("req")) {
+            if (id.equals("req")) {
                 throw new RuntimeException("'req' is immutable");
             }
 
-            return new AssignTuple(id, this.getVariable(ctx.getText()));
+            // Assuming the goal is to overwrite variable
+            return new AssignTuple(id, null);
         } else { // object field
 
             /*
@@ -476,12 +461,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         JsonElement data = this.visitAssignValue(ctx.assignValue());
 
-        if (tup.data == null) { // Means non object field does not exist in any scope
+        if (tup.data == null) { // non object field
             this.putVariable(tup.name, data);
-        } else { // previously existed or now exists in scope
+        } else { // object
             if (tup.data.isJsonObject()) {
                 tup.data.getAsJsonObject().add(tup.name, data);
-            } else {
+            } else { // Shouldnt happen...
                 this.getScope(tup.name).put(tup.name, data);
             }
         }
@@ -570,14 +555,14 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
     }
 
     @Override
-    public JsonObject visitScript(DomsaScriptParser.ScriptContext ctx) {
-        Object stmtRes = null;
+    public JsonElement visitScript(DomsaScriptParser.ScriptContext ctx) {
+        JsonElement stmtRes = null;
 
         for (var stmt : ctx.stmt()) {
             stmtRes = this.visitStmt(stmt);
         }
 
-        return this.getVariable("res").getAsJsonObject();
+        return this.getVariable("res");
     }
 
     static class AssignTuple {
