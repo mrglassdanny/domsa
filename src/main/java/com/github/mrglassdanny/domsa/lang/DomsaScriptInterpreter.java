@@ -6,10 +6,7 @@ import com.github.mrglassdanny.domsa.lang.antlrgen.DomsaScriptParser;
 import com.github.mrglassdanny.domsa.lang.err.DomsaScriptSyntaxErrorListener;
 import com.github.mrglassdanny.domsa.lang.fn.FnRepository;
 import com.google.gson.*;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ConsoleErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +22,21 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
     private static final Pattern FORMAT_STRING_PATTERN = Pattern.compile("\\{.*?}", Pattern.CASE_INSENSITIVE);
 
-    Stack<HashMap<String, JsonElement>> scopes;
+    private String path;
+    private Stack<HashMap<String, JsonElement>> scopes;
+    private JsonHelper jsonHelper;
 
-    public DomsaScriptInterpreter() {
-        this(new JsonObject());
-    }
 
-    public DomsaScriptInterpreter(JsonObject req) {
+    public DomsaScriptInterpreter(String path, JsonObject req) {
+
+        if (path == null || path.isEmpty()) {
+            this.path = "script";
+        } else {
+            this.path = path;
+        }
+
         this.scopes = new Stack<>();
+        this.jsonHelper = new JsonHelper(this.path);
 
         var mainScopeVariables = new HashMap<String, JsonElement>(2);
 
@@ -41,7 +45,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         this.scopes.push(mainScopeVariables);
     }
 
-    public static JsonElement exec(String script, JsonObject req) {
+    public static void thrwErr(String path, Token token, String msg) {
+        String msgPrefix = String.format("%s %d:%d ", path, token.getLine(), token.getCharPositionInLine());
+        throw new RuntimeException(msgPrefix + msg);
+    }
+
+    public static JsonElement exec(String path, String script, JsonObject req) {
 
         var parser = new DomsaScriptParser(
                 new CommonTokenStream(new DomsaScriptLexer(CharStreams.fromString(script))));
@@ -56,7 +65,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             if (!errListener.syntaxErrors.isEmpty()) {
                 return new JsonPrimitive("SyntaxError: " + errListener.syntaxErrors.get(0).toString());
             } else {
-                return new DomsaScriptInterpreter(req).visitScript(ctx);
+                return new DomsaScriptInterpreter(path, req).visitScript(ctx);
             }
         } catch (RecognitionException recognitionException) {
             return new JsonPrimitive("RecognitionError: " + recognitionException.getMessage());
@@ -171,7 +180,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             return FnRepository.exec(moduleName, fnName, fnArgs);
         } catch (Exception fnException) {
             if (!catchErr) {
-                throw new RuntimeException(fnException.getMessage());
+                thrwErr(this.path, ctx.start, fnException.getMessage());
             }
             return JsonNull.INSTANCE;
         }
@@ -190,7 +199,12 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         } else if (ctx.String() != null) {
             return new JsonPrimitive(evalString(ctx.String().getText()));
         } else if (ctx.FormatString() != null) {
-            return new JsonPrimitive(this.evalFormatString(ctx.FormatString().getText()));
+            try {
+                return new JsonPrimitive(this.evalFormatString(ctx.FormatString().getText()));
+            } catch (Exception fmtStrException) {
+                thrwErr(this.path, ctx.FormatString().getSymbol(), "failed to evaluate format string (" + fmtStrException.getMessage() + ")");
+                return JsonNull.INSTANCE;
+            }
         } else if (ctx.True() != null) {
             return new JsonPrimitive(true);
         } else if (ctx.False() != null) {
@@ -216,11 +230,11 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size(); exprIdx++, operIdx += 2) {
                 String oper = ctx.children.get(operIdx).getText();
                 if (oper.equals("*")) {
-                    res = JsonHelper.mul(res, exprs.get(exprIdx));
+                    res = this.jsonHelper.mul(res, exprs.get(exprIdx), ctx.start);
                 } else if (oper.equals("/")) {
-                    res = JsonHelper.div(res, exprs.get(exprIdx));
+                    res = this.jsonHelper.div(res, exprs.get(exprIdx), ctx.start);
                 } else {
-                    res = JsonHelper.mod(res, exprs.get(exprIdx));
+                    res = this.jsonHelper.mod(res, exprs.get(exprIdx), ctx.start);
                 }
             }
 
@@ -244,9 +258,9 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             for (int exprIdx = 1, operIdx = 1; exprIdx < exprs.size(); exprIdx++, operIdx += 2) {
                 String oper = ctx.children.get(operIdx).getText();
                 if (oper.equals("+")) {
-                    res = JsonHelper.add(res, exprs.get(exprIdx));
+                    res = this.jsonHelper.add(res, exprs.get(exprIdx), ctx.start);
                 } else {
-                    res = JsonHelper.sub(res, exprs.get(exprIdx));
+                    res = this.jsonHelper.sub(res, exprs.get(exprIdx), ctx.start);
                 }
             }
 
@@ -271,32 +285,32 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
                 String oper = ctx.children.get(operIdx).getText();
                 switch (oper) {
                     case "==" -> {
-                        if (!JsonHelper.equals(exprs.get(exprIdx), (exprs.get(exprIdx + 1)))) {
+                        if (!this.jsonHelper.isEqual(exprs.get(exprIdx), (exprs.get(exprIdx + 1)), ctx.start)) {
                             return new JsonPrimitive(false);
                         }
                     }
                     case "!=" -> {
-                        if (JsonHelper.equals(exprs.get(exprIdx), (exprs.get(exprIdx + 1)))) {
+                        if (this.jsonHelper.isEqual(exprs.get(exprIdx), (exprs.get(exprIdx + 1)), ctx.start)) {
                             return new JsonPrimitive(false);
                         }
                     }
                     case "<" -> {
-                        if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) >= 0) {
+                        if (this.jsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1)), ctx.start) >= 0) {
                             return new JsonPrimitive(false);
                         }
                     }
                     case ">" -> {
-                        if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) <= 0) {
+                        if (this.jsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1)), ctx.start) <= 0) {
                             return new JsonPrimitive(false);
                         }
                     }
                     case "<=" -> {
-                        if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) > 0) {
+                        if (this.jsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1)), ctx.start) > 0) {
                             return new JsonPrimitive(false);
                         }
                     }
                     default -> {
-                        if (JsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1))) < 0) {
+                        if (this.jsonHelper.compare(exprs.get(exprIdx), (exprs.get(exprIdx + 1)), ctx.start) < 0) {
                             return new JsonPrimitive(false);
                         }
                     }
@@ -404,7 +418,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
             var id = ctx.getText();
             if (id.equals("req")) {
-                throw new RuntimeException("'req' is immutable");
+                thrwErr(this.path, ctx.start, "'req' is immutable");
             }
 
             // Assuming the goal is to overwrite variable
@@ -525,7 +539,7 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
 
         var idExprRes = this.visitIdExpr(ctx.idExpr());
         if (!idExprRes.isJsonArray()) {
-            throw new RuntimeException("'" + ctx.idExpr().getText() + "' is not an array");
+            thrwErr(this.path, ctx.idExpr().start, "'" + ctx.idExpr().getText() + "' is not an array");
         }
 
         var arr = idExprRes.getAsJsonArray();
@@ -575,57 +589,73 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
         }
     }
 
-    static class JsonHelper {
+    class JsonHelper {
 
-        public static JsonElement mul(JsonElement a, JsonElement b) {
+        private String path;
+
+        public JsonHelper(String path) {
+            this.path = path;
+        }
+
+        public JsonElement mul(JsonElement a, JsonElement b, Token token) {
             try {
                 return new JsonPrimitive(a.getAsDouble() * b.getAsDouble());
             } catch (Exception e) {
-                throw new RuntimeException("Invalid operation: " + a.toString() + " * " + b.toString());
+                DomsaScriptInterpreter.thrwErr(this.path, token, "Invalid operation: " + a.toString() + " * " + b.toString());
             }
+
+            return JsonNull.INSTANCE;
         }
 
-        public static JsonElement div(JsonElement a, JsonElement b) {
+        public JsonElement div(JsonElement a, JsonElement b, Token token) {
             try {
                 return new JsonPrimitive(a.getAsDouble() / b.getAsDouble());
             } catch (Exception e) {
-                throw new RuntimeException("Invalid operation: " + a.toString() + " / " + b.toString());
+                DomsaScriptInterpreter.thrwErr(this.path, token, "Invalid operation: " + a.toString() + " / " + b.toString());
             }
+
+            return JsonNull.INSTANCE;
         }
 
-        public static JsonElement mod(JsonElement a, JsonElement b) {
+        public JsonElement mod(JsonElement a, JsonElement b, Token token) {
             try {
                 return new JsonPrimitive(a.getAsDouble() % b.getAsDouble());
             } catch (Exception e) {
-                throw new RuntimeException("Invalid operation: " + a.toString() + " % " + b.toString());
+                DomsaScriptInterpreter.thrwErr(this.path, token, "Invalid operation: " + a.toString() + " % " + b.toString());
             }
+
+            return JsonNull.INSTANCE;
         }
 
-        public static JsonElement add(JsonElement a, JsonElement b) {
+        public JsonElement add(JsonElement a, JsonElement b, Token token) {
             try {
                 return new JsonPrimitive(a.getAsDouble() + b.getAsDouble());
             } catch (Exception e) {
-                throw new RuntimeException("Invalid operation: " + a.toString() + " + " + b.toString());
+                DomsaScriptInterpreter.thrwErr(this.path, token, "Invalid operation: " + a.toString() + " + " + b.toString());
             }
+
+            return JsonNull.INSTANCE;
         }
 
-        public static JsonElement sub(JsonElement a, JsonElement b) {
+        public JsonElement sub(JsonElement a, JsonElement b, Token token) {
             try {
                 return new JsonPrimitive(a.getAsDouble() - b.getAsDouble());
             } catch (Exception e) {
-                throw new RuntimeException("Invalid operation: " + a.toString() + " - " + b.toString());
+                DomsaScriptInterpreter.thrwErr(this.path, token, "Invalid operation: " + a.toString() + " - " + b.toString());
             }
+
+            return JsonNull.INSTANCE;
         }
 
-        public static boolean equals(JsonElement a, JsonElement b) {
+        public boolean isEqual(JsonElement a, JsonElement b, Token token) {
             if (a == b) {
                 return true;
             }
 
-            return compare(a, b) == 0;
+            return compare(a, b, token) == 0;
         }
 
-        public static int compare(JsonElement a, JsonElement b) {
+        public int compare(JsonElement a, JsonElement b, Token token) {
 
             // Throws exception if a or b is array/object
             // Otherwise compares primitives as strings/handles nulls
@@ -646,8 +676,10 @@ public class DomsaScriptInterpreter extends DomsaScriptBaseVisitor {
             if (a.isJsonPrimitive() && b.isJsonPrimitive()) {
                 return a.getAsString().compareTo(b.getAsString());
             } else {
-                throw new RuntimeException("Invalid comparison: " + a.toString() + " and " + b.toString());
+                DomsaScriptInterpreter.thrwErr(this.path, token, "Invalid comparison: " + a.toString() + " and " + b.toString());
             }
+
+            return 0;
         }
     }
 }

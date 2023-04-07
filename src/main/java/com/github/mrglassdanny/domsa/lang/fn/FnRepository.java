@@ -2,6 +2,7 @@ package com.github.mrglassdanny.domsa.lang.fn;
 
 import com.github.mrglassdanny.domsa.lang.fn.Module;
 import com.github.mrglassdanny.domsa.lang.fn.api.ApiModule;
+import com.github.mrglassdanny.domsa.lang.fn.arg.ArgModule;
 import com.github.mrglassdanny.domsa.lang.fn.arr.ArrModule;
 import com.github.mrglassdanny.domsa.lang.fn.date.DateModule;
 import com.github.mrglassdanny.domsa.lang.fn.ds.DsModule;
@@ -32,6 +33,7 @@ public class FnRepository {
         var date = new DateModule();
         var str = new StrModule();
         var arr = new ArrModule();
+        var arg = new ArgModule();
 
         modules.put(env.getName(), env);
         modules.put(ds.getName(), ds);
@@ -41,6 +43,7 @@ public class FnRepository {
         modules.put(date.getName(), date);
         modules.put(str.getName(), str);
         modules.put(arr.getName(), arr);
+        modules.put(arg.getName(), arg);
     }
 
     public static JsonElement exec(String moduleName, String fnName, ArrayList<JsonElement> fnArgs) throws Exception {
